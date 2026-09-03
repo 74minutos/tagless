@@ -1,0 +1,11 @@
+{
+  "name": "@tagless-dev/compiler",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "tagless compiler: tracking.config.yaml in, minimal browser bundle out.",
+  "main": "src/compile.js",
+  "bin": {
+    "tagless-compile": "src/cli.js"
+  }
+}

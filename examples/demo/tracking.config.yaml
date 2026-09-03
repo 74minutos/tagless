@@ -1,0 +1,28 @@
+# Demo container: GA4 + Meta, consent-gated, SPA pageviews, dataLayer bridge.
+site:
+  id: demo
+  consent:
+    source: custom
+    default: denied
+
+events:
+  page_view: { auto: spa }
+  purchase:
+    source: dataLayer
+    fields: { value: number, currency: string }
+
+destinations:
+  ga4:
+    spec: ga4@1
+    measurement_id: G-TEST123
+    consent: analytics
+    events: [page_view, purchase]
+  meta:
+    spec: meta@2
+    pixel_id: "1234567890"
+    mode: direct
+    consent: marketing
+    events: [page_view, purchase]
+
+targets:
+  - client

@@ -1,0 +1,17 @@
+{
+  "config": { "measurement_id": "G-TEST123" },
+  "event": { "name": "purchase", "data": { "value": 49.9, "currency": "EUR" } },
+  "expect": [
+    {
+      "url": "https://www.google-analytics.com/g/collect",
+      "method": "POST",
+      "params": {
+        "v": "2",
+        "tid": "G-TEST123",
+        "en": "purchase",
+        "epn.value": "49.9",
+        "ep.currency": "EUR"
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+# GA4 — vendor spec contract
+id: ga4
+version: 1
+name: Google Analytics 4
+docs: https://developers.google.com/analytics/devguides/collection/protocol/ga4
+
+consent: analytics
+
+placements: [client, server]
+modes:
+  direct:
+    placement: client
+    transport: POST https://www.google-analytics.com/g/collect
+    note: g/collect web protocol directly; no gtag.js
+  sdk:
+    placement: client
+    note: loads gtag.js — only when Google Signals / vendor-side features are required
+  mp:
+    placement: server
+    transport: POST https://www.google-analytics.com/mp/collect
+    note: Measurement Protocol; requires api_secret
+
+config:
+  measurement_id: { type: string, required: true, pattern: "^G-" }
+
+params:
+  # events pass through with their own names (GA4 recommended-event vocabulary)
+  string_fields: "ep.<key>"
+  numeric_fields: "epn.<key>"

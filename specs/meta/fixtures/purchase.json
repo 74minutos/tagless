@@ -1,0 +1,16 @@
+{
+  "config": { "pixel_id": "1234567890" },
+  "event": { "name": "purchase", "data": { "value": 49.9, "currency": "EUR" } },
+  "expect": [
+    {
+      "url": "https://www.facebook.com/tr",
+      "method": "GET",
+      "params": {
+        "id": "1234567890",
+        "ev": "Purchase",
+        "cd[value]": "49.9",
+        "cd[currency]": "EUR"
+      }
+    }
+  ]
+}

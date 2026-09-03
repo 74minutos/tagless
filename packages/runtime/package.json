@@ -1,0 +1,9 @@
+{
+  "name": "@tagless-dev/runtime",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "tagless browser core: event bus, consent gate, transport. Size budget: <3KB gzipped for a compiled bundle.",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
+}

@@ -1,0 +1,44 @@
+# Meta Pixel / Conversions API — vendor spec contract
+id: meta
+version: 2
+name: Meta Pixel / Conversions API
+docs: https://developers.facebook.com/docs/meta-pixel
+
+consent: marketing
+
+placements: [client, server]
+modes:
+  direct:
+    placement: client
+    transport: GET https://www.facebook.com/tr
+    note: fires the tracking request directly; no fbevents.js (~110KB saved)
+  sdk:
+    placement: client
+    note: loads fbevents.js — only when vendor-side features (auto events, advanced matching UI) are required
+  capi:
+    placement: server
+    transport: POST https://graph.facebook.com/v21.0/{pixel_id}/events
+    note: the hybrid target upgrades `direct` destinations to this automatically
+
+config:
+  pixel_id: { type: string, required: true }
+
+pii:
+  # advanced matching fields — hash before they leave the machine that saw them
+  em: sha256(lowercase(trim(email)))
+  ph: sha256(digits_only(phone))
+
+event_map:
+  page_view: PageView
+  purchase: Purchase
+  add_to_cart: AddToCart
+  begin_checkout: InitiateCheckout
+  view_item: ViewContent
+  search: Search
+  sign_up: CompleteRegistration
+  generate_lead: Lead
+
+fields:
+  purchase:
+    value: { maps: "cd[value]", required: true }
+    currency: { maps: "cd[currency]", required: true }
