@@ -9,7 +9,10 @@
   ],
   "scripts": {
     "demo": "node packages/compiler/src/cli.js examples/demo/tracking.config.yaml examples/demo/dist",
-    "size": "npm run demo && node scripts/size.js examples/demo/dist/t.js"
+    "size": "npm run demo && node scripts/size.js examples/demo/dist/t.js",
+    "test": "node scripts/check-specs.js",
+    "mcp": "node packages/mcp/src/index.js",
+    "mcp:smoke": "node scripts/mcp-smoke.js"
   },
   "devDependencies": {
     "esbuild": "^0.24.0",

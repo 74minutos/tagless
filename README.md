@@ -25,7 +25,8 @@ tracking.config.yaml ──▶ compiler ──▶ dist/t.js  (client target, zer
 |---|---|
 | `packages/runtime` | The browser core: event bus, consent gate, transport. The <3KB budget lives here. |
 | `packages/compiler` | Config → minified IIFE bundle via esbuild. Vendor code generators. |
-| `packages/mcp` | The MCP server — the only management interface. (stub) |
+| `packages/mcp` | The MCP server — the only management interface. `plan` / `apply` / `simulate` / `search_specs` working over stdio. |
+| `packages/simulator` | vm sandbox: run a compiled bundle, capture every outgoing request. Powers `simulate` and the fixture CI. |
 | `specs/` | Vendor spec contracts + fixtures (GA4, Meta so far). |
 | `examples/demo` | A full `tracking.config.yaml` you can compile today. |
 
@@ -33,7 +34,15 @@ tracking.config.yaml ──▶ compiler ──▶ dist/t.js  (client target, zer
 
 ```bash
 npm install
-npm run size     # compiles examples/demo and prints the gzipped bundle size
+npm run size       # compiles examples/demo and prints the gzipped bundle size
+npm test           # runs every vendor spec fixture against the generators
+npm run mcp:smoke  # end-to-end MCP client: plan → simulate → apply
+```
+
+Point your agent at the MCP server:
+
+```json
+{ "mcpServers": { "tagless": { "command": "node", "args": ["packages/mcp/src/index.js"] } } }
 ```
 
 ## Status

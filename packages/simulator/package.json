@@ -1,0 +1,8 @@
+{
+  "name": "@tagless-dev/simulator",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Run a compiled tagless bundle in a DOM-shimmed vm sandbox and capture every outgoing request. Powers `simulate`, the fixture CI, and plan payload previews.",
+  "main": "src/index.js"
+}

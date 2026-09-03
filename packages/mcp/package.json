@@ -1,0 +1,18 @@
+{
+  "name": "@tagless-dev/mcp",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "The tagless MCP server — the only management interface. plan / apply / simulate / search_specs over stdio.",
+  "main": "src/index.js",
+  "bin": {
+    "tagless-mcp": "src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@tagless-dev/compiler": "*",
+    "@tagless-dev/simulator": "*",
+    "yaml": "^2.5.0",
+    "zod": "^3.23.0"
+  }
+}

@@ -1,12 +1,25 @@
-# @tagless-dev/mcp (stub)
+# @tagless-dev/mcp
 
-The MCP server is the only management interface for tagless. Not implemented yet — the surface is specified in [SPEC.md §04](../../SPEC.md):
+The tagless MCP server — the only management interface. Runs over stdio:
 
-`init_site` · `import_gtm` · `plan` · `apply` · `simulate` · `audit` · `search_specs` · `rollback`
+```json
+{ "mcpServers": { "tagless": { "command": "node", "args": ["packages/mcp/src/index.js"] } } }
+```
 
-Implementation notes:
+## Tools (implemented)
 
-- Built on `@modelcontextprotocol/sdk`; runs locally over stdio first (`npx @tagless-dev/mcp`), remote endpoint in v1.
-- `plan` output must include: events fired, exact per-vendor request payloads (from `simulate`), consent gating, and the gzip size delta of the compiled bundle.
-- `apply` refuses to run without a plan ID produced from the current config hash.
-- `simulate` = compile → run the bundle in a DOM sandbox → intercept `fetch`/`sendBeacon` → return the captured requests. The same harness runs spec fixtures in CI.
+| Tool | Contract |
+|---|---|
+| `plan` | Config in → destinations, consent gates, events, gzip size vs the 3KB budget, delta vs the current bundle, and a `plan_id`. Writes nothing. |
+| `apply` | Requires the `plan_id` of the **exact current config** — any config change invalidates the plan and apply refuses with the new id to review. Compiles to `<config dir>/dist`. |
+| `simulate` | Compiles, runs the bundle in the vm sandbox (`@tagless-dev/simulator`), fires the given events under a given consent state, returns every outgoing request with parsed params. |
+| `search_specs` | Queries `specs/`: id, placements, modes, consent category, config fields, fixture count. |
+
+## Still to build (SPEC.md §04)
+
+`init_site` · `import_gtm` · `audit` · `rollback` · remote endpoint (v1)
+
+## Verification
+
+- `npm test` — every spec fixture compiled, sandboxed, and asserted (subset match on params).
+- `npm run mcp:smoke` — real stdio client: list → plan → simulate → stale-apply rejected → apply.
