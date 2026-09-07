@@ -26,6 +26,20 @@ The user never learns tagless. Their agent does — through MCP, which both Clau
 
 Hosted mode is what makes "connect and it installs things on your web" true for people without a deploy pipeline: paste one immutable snippet once, and every change after that is the agent republishing bundles.
 
+### Hosted mode is core, not a tier
+
+**Decision (2026-09-07):** hosted is the default install path, not an optional convenience. GTM won on install UX — one paste, done, by anyone, on any CMS — and tagless matches that or loses the audience that gives an OSS project critical mass. Repo mode is the power-user path.
+
+The snippet contract is frozen now (v0), even though the CDN ships in v1, because it's the one piece that can never change once it's pasted into pages we don't control:
+
+```html
+<script src="https://cdn.tagless.sh/t/<site-id>.js" defer></script>
+```
+
+- **The snippet URL is immutable; the bundle behind it is not.** `apply` republishes content at the same URL. Cache: short TTL + `stale-while-revalidate`, so updates land in minutes without the URL ever changing. (Consequence: no SRI on the alias URL — integrity-pinned installs use the versioned URL below instead.)
+- **Every apply also publishes an immutable versioned URL** (`…/t/<site-id>@<plan_id>.js`, cached forever). `rollback` = repointing the alias to a previous version — no rebuild, instant.
+- `<site-id>` is claimed at `init_site` time and namespaced per account; the alias only ever serves bundles applied with that account's key.
+
 ## 03 · Config — one file, in git
 
 ```yaml
@@ -100,7 +114,7 @@ Everything else — new vendors, new event sources, new targets — lives in the
 | Stage | Scope | Proof |
 |---|---|---|
 | **v0** | Runtime core + compiler (client target) + local MCP (`plan`/`apply`/`simulate`) + 3 specs: GA4, Meta, TikTok + `import_gtm`. | One real site fully migrated off GTM; Lighthouse before/after published. |
-| **v1** | Hosted loader (CDN + immutable snippet), edge target (Cloudflare Workers one-click), `audit`, remote MCP endpoint. | "Connect Claude → tracking installed" demo video, end to end, no terminal. |
+| **v1** | Hosted loader (CDN + immutable snippet — **committed core, contract frozen in v0**, see §02), edge target (Cloudflare Workers one-click), `audit`, remote MCP endpoint. | "Connect Claude → tracking installed" demo video, end to end, no terminal. |
 | **v2** | Public spec registry + contribution CI, `rollback`, consent-mode interop, 15+ specs. | First external spec contribution merged. |
 
 ## 08 · Open questions
