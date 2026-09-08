@@ -10,4 +10,4 @@ routes = [
 
 [[kv_namespaces]]
 binding = "BUNDLES"
-id = "REPLACE_AT_DEPLOY" # npx wrangler kv namespace create BUNDLES
+id = "f89ac9e26033420a9178cd4dd07199d0"
