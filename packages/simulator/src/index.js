@@ -76,9 +76,18 @@ export function parseRequest(req) {
   }
 }
 
+/** deep subset: every leaf in `exp` must equal the corresponding leaf in `got` */
+const subset = (exp, got) => {
+  if (typeof exp !== 'object' || exp === null) return exp === got
+  if (typeof got !== 'object' || got === null) return false
+  return Object.entries(exp).every(([k, v]) => subset(v, got[k]))
+}
+
 /**
  * Assert one expected request (fixture shape) against the captured list.
- * `params` are a subset match. Returns null on success, a reason string on failure.
+ * `params` are a query subset match; `body` (when given) is a deep subset
+ * match against the JSON request body. Returns null on success, a reason
+ * string on failure.
  */
 export function matchExpectation(captured, expected) {
   const parsed = captured.map(parseRequest)
@@ -89,7 +98,17 @@ export function matchExpectation(captured, expected) {
   for (const r of candidates) {
     if (expected.method && r.method !== expected.method) continue
     const missing = Object.entries(expected.params ?? {}).filter(([k, v]) => r.params[k] !== v)
-    if (!missing.length) return null
+    if (missing.length) continue
+    if (expected.body) {
+      let got
+      try {
+        got = JSON.parse(r.body)
+      } catch {
+        continue
+      }
+      if (!subset(expected.body, got)) continue
+    }
+    return null
   }
   const best = candidates[0]
   const missing = Object.entries(expected.params ?? {})

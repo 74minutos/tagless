@@ -1,0 +1,15 @@
+{
+  "config": { "pixel_id": "C0FFEE12345" },
+  "event": { "name": "purchase", "data": { "value": 49.9, "currency": "EUR" } },
+  "expect": [
+    {
+      "url": "https://analytics.tiktok.com/api/v2/pixel",
+      "method": "POST",
+      "body": {
+        "event": "CompletePayment",
+        "context": { "pixel": { "code": "C0FFEE12345" } },
+        "properties": { "value": 49.9, "currency": "EUR" }
+      }
+    }
+  ]
+}

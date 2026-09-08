@@ -5,6 +5,7 @@ import { parse } from 'yaml'
 import { build } from 'esbuild'
 import { ga4 } from './vendors/ga4.js'
 import { meta } from './vendors/meta.js'
+import { tiktok } from './vendors/tiktok.js'
 
 const RUNTIME_ENTRY = path.resolve(
   fileURLToPath(new URL('.', import.meta.url)),
@@ -14,7 +15,7 @@ const RUNTIME_ENTRY = path.resolve(
 // Built-in reference generators. The agent-written, spec-validated generators
 // will register here the same way; these two exist so the pipeline is real
 // end to end from day one.
-const generators = { ga4, meta }
+const generators = { ga4, meta, tiktok }
 
 export function generateEntry(cfg, baseDir = '.') {
   const site = cfg.site

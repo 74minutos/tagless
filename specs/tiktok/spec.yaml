@@ -1,0 +1,48 @@
+# TikTok Pixel / Events API — vendor spec contract
+id: tiktok
+version: 1
+name: TikTok Pixel / Events API
+docs: https://business-api.tiktok.com/portal/docs?id=1739585702922241
+
+consent: marketing
+
+placements: [client, server]
+modes:
+  direct:
+    placement: client
+    transport: POST https://analytics.tiktok.com/api/v2/pixel
+    status: experimental
+    note: the browser pixel's wire format is not officially documented — this
+      reproduces what events.js sends; verify in TikTok Events Manager before
+      relying on it in production. The documented path is events_api (server).
+  sdk:
+    placement: client
+    note: loads events.js — TikTok's supported client integration
+  events_api:
+    placement: server
+    transport: POST https://business-api.tiktok.com/open_api/v1.3/event/track/
+    note: documented server-side API; requires access_token. The hybrid target
+      upgrades `direct` destinations to this.
+
+config:
+  pixel_id: { type: string, required: true }
+
+pii:
+  em: sha256(lowercase(trim(email)))
+  ph: sha256(e164(phone))
+
+event_map:
+  page_view: Pageview
+  purchase: CompletePayment
+  add_to_cart: AddToCart
+  begin_checkout: InitiateCheckout
+  view_item: ViewContent
+  search: Search
+  sign_up: CompleteRegistration
+  generate_lead: SubmitForm
+  contact: Contact
+
+fields:
+  purchase:
+    value: { maps: "properties.value", required: true }
+    currency: { maps: "properties.currency", required: true }
