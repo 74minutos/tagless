@@ -22,9 +22,22 @@ const js = (body, cache, version) =>
     },
   })
 
+import { LANDING } from './landing.js'
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url)
+    if (url.pathname === '/' && (req.method === 'GET' || req.method === 'HEAD')) {
+      return new Response(LANDING, {
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'public, max-age=300, stale-while-revalidate=86400',
+        },
+      })
+    }
+    if (url.pathname === '/robots.txt') {
+      return new Response('User-agent: *\nAllow: /\n', { headers: { 'content-type': 'text/plain' } })
+    }
     const m = url.pathname.match(/^\/t\/([a-z0-9][a-z0-9-]*)(?:@([0-9a-f]{6,64}))?(\.js)?$/)
     if (!m) return new Response('not found', { status: 404 })
     const [, site, version, ext] = m

@@ -5,7 +5,8 @@ compatibility_date = "2026-09-01"
 # Custom domain: Cloudflare creates the DNS record automatically
 # (requires the tagless.foo zone on the same account).
 routes = [
-  { pattern = "cdn.tagless.foo", custom_domain = true }
+  { pattern = "cdn.tagless.foo", custom_domain = true },
+  { pattern = "tagless.foo", custom_domain = true }
 ]
 
 [[kv_namespaces]]

@@ -156,6 +156,37 @@ server.registerTool(
   }
 )
 
+import { detectTags, draftConfig } from './detect.js'
+
+server.registerTool(
+  'init_site',
+  {
+    description:
+      'Inspect a live URL: detect existing tracking (GTM containers, GA4, Meta pixel, common vendors) and the CMP, then draft a tracking.config.yaml to start the migration from. Page-level scan — for the full GTM tag inventory, export the container and run import_gtm.',
+    inputSchema: {
+      url: z.string().describe('page URL to inspect'),
+      out: z.string().optional().describe('if given, write the draft tracking.config.yaml here'),
+    },
+  },
+  async ({ url, out }) => {
+    const res = await fetch(url, {
+      redirect: 'follow',
+      headers: { 'user-agent': 'Mozilla/5.0 (compatible; tagless-init-site)' },
+    })
+    if (!res.ok) return fail(`fetch failed: ${res.status} ${res.statusText}`)
+    const html = await res.text()
+    const detected = detectTags(html)
+    const siteId = new URL(res.url).hostname.replace(/^www\./, '').replace(/[^a-z0-9-]/g, '-')
+    const { config, advice } = draftConfig(detected, siteId)
+    const configYaml = stringify(config)
+    if (out) {
+      mkdirSync(path.dirname(path.resolve(out)), { recursive: true })
+      writeFileSync(path.resolve(out), configYaml)
+    }
+    return json({ detected, advice, config_yaml: configYaml, written_to: out ?? null })
+  }
+)
+
 const CDN = () => process.env.TAGLESS_CDN ?? 'https://cdn.tagless.foo'
 const publishAuth = () => {
   const key = process.env.TAGLESS_PUBLISH_KEY
