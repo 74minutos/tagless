@@ -10,13 +10,15 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
 import { createHash } from 'node:crypto'
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, existsSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parse } from 'yaml'
 import { compile, generateEntry } from '@tagless-dev/compiler'
+import { importGtm } from '@tagless-dev/compiler/src/import-gtm.js'
+import { stringify } from 'yaml'
 import { createSandbox, parseRequest } from '@tagless-dev/simulator'
 
 const REPO_ROOT = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '../../..')
@@ -150,6 +152,33 @@ server.registerTool(
       fired: events.map((e) => e.name),
       requests: captured.map(parseRequest),
       note: 'includes any auto page_view queued at load and released by consent',
+    })
+  }
+)
+
+server.registerTool(
+  'import_gtm',
+  {
+    description:
+      'Migration on-ramp: read a GTM container export JSON (Admin → Export Container) and produce a tracking.config.yaml draft plus a report of what mapped cleanly (GA4 tags, Meta pixels sniffed inside custom HTML) and what needs review. Best-effort: nothing is guessed, everything unmapped is reported with a reason.',
+    inputSchema: {
+      export: z.string().describe('path to the GTM container export JSON'),
+      out: z.string().optional().describe('if given, write the draft tracking.config.yaml here'),
+    },
+  },
+  async ({ export: exportPath, out }) => {
+    const exportJson = JSON.parse(readFileSync(path.resolve(exportPath), 'utf8'))
+    const { config, report } = importGtm(exportJson)
+    const configYaml = stringify(config)
+    if (out) {
+      mkdirSync(path.dirname(path.resolve(out)), { recursive: true })
+      writeFileSync(path.resolve(out), configYaml)
+    }
+    return json({
+      report,
+      config_yaml: configYaml,
+      written_to: out ?? null,
+      next_step: 'review the draft (especially consent categories and unmapped tags), then plan → simulate → apply',
     })
   }
 )

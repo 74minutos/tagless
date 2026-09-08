@@ -14,10 +14,11 @@ The tagless MCP server — the only management interface. Runs over stdio:
 | `apply` | Requires the `plan_id` of the **exact current config** — any config change invalidates the plan and apply refuses with the new id to review. Compiles to `<config dir>/dist`. |
 | `simulate` | Compiles, runs the bundle in the vm sandbox (`@tagless-dev/simulator`), fires the given events under a given consent state, returns every outgoing request with parsed params. |
 | `search_specs` | Queries `specs/`: id, placements, modes, consent category, config fields, fixture count. |
+| `import_gtm` | GTM container export JSON → `tracking.config.yaml` draft + mapping report. Recognizes GA4 tags (resolving constant variables), Meta pixels sniffed inside custom HTML (migrated to direct mode), pageview and custom-event triggers. Everything else is reported with a reason, never guessed. |
 
 ## Still to build (SPEC.md §04)
 
-`init_site` · `import_gtm` · `audit` · `rollback` · remote endpoint (v1)
+`init_site` · `audit` · `rollback` · remote endpoint (v1)
 
 ## Verification
 

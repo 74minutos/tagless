@@ -1,0 +1,79 @@
+{
+  "exportFormatVersion": 2,
+  "containerVersion": {
+    "container": { "publicId": "GTM-DEMO123", "name": "Synthetic demo container" },
+    "variable": [
+      {
+        "variableId": "10",
+        "name": "GA4 Measurement ID",
+        "type": "c",
+        "parameter": [{ "type": "TEMPLATE", "key": "value", "value": "G-IMPORTED1" }]
+      }
+    ],
+    "trigger": [
+      {
+        "triggerId": "20",
+        "name": "purchase event",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "purchase" }
+            ]
+          }
+        ]
+      }
+    ],
+    "tag": [
+      {
+        "tagId": "1",
+        "name": "GA4 - Config",
+        "type": "gaawc",
+        "parameter": [{ "type": "TEMPLATE", "key": "measurementId", "value": "{{GA4 Measurement ID}}" }],
+        "firingTriggerId": ["2147479553"]
+      },
+      {
+        "tagId": "2",
+        "name": "GA4 - Purchase",
+        "type": "gaawe",
+        "parameter": [{ "type": "TEMPLATE", "key": "eventName", "value": "purchase" }],
+        "firingTriggerId": ["20"]
+      },
+      {
+        "tagId": "3",
+        "name": "Meta Pixel - Base",
+        "type": "html",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "html",
+            "value": "<script>!function(f,b,e,v,n,t,s){...}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init', '998877665544332');fbq('track', 'PageView');</script>"
+          }
+        ],
+        "firingTriggerId": ["2147479553"]
+      },
+      {
+        "tagId": "4",
+        "name": "Hotjar",
+        "type": "html",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "html",
+            "value": "<script>(function(h,o,t,j,a,r){h.hj=h.hj||function(){};h._hjSettings={hjid:12345};})(window,document);</script>"
+          }
+        ],
+        "firingTriggerId": ["2147479553"]
+      },
+      {
+        "tagId": "5",
+        "name": "Legacy affiliate pixel",
+        "type": "img",
+        "parameter": [{ "type": "TEMPLATE", "key": "url", "value": "https://affiliate.example/px?cid=999" }],
+        "firingTriggerId": ["20"]
+      }
+    ]
+  }
+}
