@@ -33,7 +33,7 @@ Hosted mode is what makes "connect and it installs things on your web" true for 
 The snippet contract is frozen now (v0), even though the CDN ships in v1, because it's the one piece that can never change once it's pasted into pages we don't control:
 
 ```html
-<script src="https://cdn.tagless.sh/t/<site-id>.js" defer></script>
+<script src="https://cdn.tagless.foo/t/<site-id>.js" defer></script>
 ```
 
 - **The snippet URL is immutable; the bundle behind it is not.** `apply` republishes content at the same URL. Cache: short TTL + `stale-while-revalidate`, so updates land in minutes without the URL ever changing. (Consequence: no SRI on the alias URL — integrity-pinned installs use the versioned URL below instead.)
@@ -119,7 +119,7 @@ Everything else — new vendors, new event sources, new targets — lives in the
 
 ## 08 · Open questions
 
-1. **Name availability.** ~~"tagless" is the name — verify npm package, tagless.dev domain, and GitHub org.~~ **Resolved 2026-09-03:** bare handles squatted (dormant). Brand stays **tagless**; GitHub org **tagless-dev**, domain **tagless.sh**, npm scope **@tagless-dev** (main CLI package `taglessjs` unscoped). All verified free.
+1. **Name availability.** ~~"tagless" is the name — verify npm package, tagless.dev domain, and GitHub org.~~ **Resolved 2026-09-08:** bare handles squatted (dormant). Brand stays **tagless**; domain **tagless.foo** (~$10/yr, Google Registry, dev-culture TLD — beats tagless.sh at $45 and the use-/get- compromises), GitHub org **tagless-dev**, npm scope **@tagless-dev** (main CLI package `taglessjs` unscoped). Rename candidates (lightag, zerotag, taglio…) evaluated and rejected 2026-09-07: the tag* namespace is universally squatted and "tagless" was only dead-squatted, not in live use.
 2. **License.** ~~MIT vs Apache-2.0.~~ **Resolved: Apache-2.0** (patent grant; hosted offering plausible).
 3. **Hosted-mode economics.** Who pays for the CDN? Free tier on Cloudflare R2/Workers is likely enough for years, but it's the one piece with an ongoing bill and an implicit SLA.
 4. **Verification mechanics.** `simulate` is deterministic (compiled bundle + jsdom), but `audit` against live sites needs a headless-browser service or a local runner — decide which ships first.
