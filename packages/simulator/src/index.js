@@ -27,6 +27,8 @@ export function createSandbox(code, page = {}) {
     URL,
     URLSearchParams,
     crypto: globalThis.crypto,
+    TextEncoder,
+    TextDecoder,
     location: {
       href,
       origin: loc.origin,
@@ -34,7 +36,20 @@ export function createSandbox(code, page = {}) {
       pathname: page.path ?? loc.pathname,
       search: loc.search,
     },
-    document: { title: page.title ?? 'Example', referrer: page.referrer ?? '' },
+    document: (() => {
+      const doc = { title: page.title ?? 'Example', referrer: page.referrer ?? '' }
+      let jar = []
+      Object.defineProperty(doc, 'cookie', {
+        get: () => jar.join('; '),
+        set: (v) => {
+          const pair = String(v).split(';')[0].trim()
+          const name = pair.split('=')[0]
+          jar = jar.filter((c) => !c.startsWith(name + '='))
+          jar.push(pair)
+        },
+      })
+      return doc
+    })(),
     history: { pushState() {} },
     addEventListener() {},
     navigator: {
@@ -99,6 +114,7 @@ export function matchExpectation(captured, expected) {
     if (expected.method && r.method !== expected.method) continue
     const missing = Object.entries(expected.params ?? {}).filter(([k, v]) => r.params[k] !== v)
     if (missing.length) continue
+    if ((expected.params_present ?? []).some((k) => !(k in r.params) || r.params[k] === '')) continue
     if (expected.body) {
       let got
       try {

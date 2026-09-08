@@ -27,3 +27,11 @@ params:
   # events pass through with their own names (GA4 recommended-event vocabulary)
   string_fields: "ep.<key>"
   numeric_fields: "epn.<key>"
+
+identity:
+  # gtag parity — the direct-mode generator implements all of these
+  cid: standard _ga cookie (GA1.1.<random>.<ts>), read AND written in the same
+    format so migrated sites keep user continuity with historical GA4 data
+  session: sid/sct/seg with 30-min timeout, _fv on first visit, _ss on session
+    start — required for GA4 to report sessions at all
+  context: ul (language), sr (screen resolution), _p (page-load id)

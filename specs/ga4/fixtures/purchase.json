@@ -9,9 +9,13 @@
         "v": "2",
         "tid": "G-TEST123",
         "en": "purchase",
+        "seg": "1",
+        "_ss": "1",
+        "_fv": "1",
         "epn.value": "49.9",
         "ep.currency": "EUR"
-      }
+      },
+      "params_present": ["cid", "sid", "sct", "ul", "sr"]
     }
   ]
 }

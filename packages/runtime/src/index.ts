@@ -18,6 +18,12 @@ export interface Ctx {
   page: () => { url: string; ref: string; title: string }
   /** fire a request; GET when body is undefined, sendBeacon when beacon=true */
   send: (url: string, body?: unknown, beacon?: boolean) => void
+  /** read a first-party cookie */
+  cookie: (name: string) => string
+  /** write a first-party cookie (days of validity) */
+  setCookie: (name: string, value: string, days: number) => void
+  /** normalized + SHA-256-hashed user data set via setUser (em, ph, fn, ln, ct, st, zp, external_id) */
+  user: () => Record<string, string>
 }
 
 export interface Destination {
@@ -42,9 +48,33 @@ export type ConsentState = Record<string, boolean>
 export interface Tagless {
   track: (name: string, data?: Record<string, unknown>) => void
   setConsent: (c: ConsentState) => void
+  /**
+   * Provide user data for advanced matching / enhanced conversions.
+   * Values are normalized (email lowercased, phone digits-only) and SHA-256
+   * hashed before they're stored — plaintext never reaches a destination.
+   * Accepts long keys (email, phone, first_name, …) or vendor-short ones.
+   */
+  setUser: (u: Record<string, string | undefined>) => Promise<void>
   use: (d: Destination) => void
   /** bridge an existing dataLayer-style global array (items with an `event` key) */
   bridge: (globalName?: string) => void
+}
+
+const USER_KEYS: Record<string, string> = {
+  email: 'em',
+  phone: 'ph',
+  first_name: 'fn',
+  last_name: 'ln',
+  city: 'ct',
+  state: 'st',
+  zip: 'zp',
+}
+
+const sha256 = async (s: string) => {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s))
+  let out = ''
+  for (const b of new Uint8Array(buf)) out += b.toString(16).padStart(2, '0')
+  return out
 }
 
 export function createTagless(opts: RuntimeOptions): Tagless {
@@ -53,9 +83,27 @@ export function createTagless(opts: RuntimeOptions): Tagless {
   const grantedByDefault = opts.consentDefault === 'granted'
   let consent: ConsentState | null = null
 
+  const user: Record<string, string> = {}
+
   const ctx: Ctx = {
     site: opts.site,
     page: () => ({ url: location.href, ref: document.referrer, title: document.title }),
+    cookie: (name) => {
+      try {
+        const m = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'))
+        return m ? decodeURIComponent(m[1]) : ''
+      } catch {
+        return ''
+      }
+    },
+    setCookie: (name, value, days) => {
+      try {
+        document.cookie = `${name}=${encodeURIComponent(value)};path=/;max-age=${days * 86400};SameSite=Lax`
+      } catch {
+        /* cookies unavailable */
+      }
+    },
+    user: () => user,
     send: (url, body, beacon) => {
       const s = body == null ? undefined : typeof body === 'string' ? body : JSON.stringify(body)
       if (beacon && navigator.sendBeacon) {
@@ -103,6 +151,21 @@ export function createTagless(opts: RuntimeOptions): Tagless {
     for (const e of held) dispatch(e)
   }
 
+  const setUser: Tagless['setUser'] = async (u) => {
+    for (const [k, raw] of Object.entries(u)) {
+      if (!raw) continue
+      const key = USER_KEYS[k] ?? k
+      const norm =
+        key === 'ph' ? String(raw).replace(/\D/g, '') : String(raw).trim().toLowerCase()
+      if (!norm) continue
+      try {
+        user[key] = await sha256(norm)
+      } catch {
+        /* no WebCrypto (http) — drop rather than leak plaintext */
+      }
+    }
+  }
+
   const use: Tagless['use'] = (d) => {
     dests.push(d)
   }
@@ -139,5 +202,5 @@ export function createTagless(opts: RuntimeOptions): Tagless {
     pv()
   }
 
-  return { track, setConsent, use, bridge }
+  return { track, setConsent, setUser, use, bridge }
 }

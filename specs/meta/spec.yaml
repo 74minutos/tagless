@@ -28,6 +28,14 @@ pii:
   em: sha256(lowercase(trim(email)))
   ph: sha256(digits_only(phone))
 
+identity:
+  # GTM/fbevents parity — the direct-mode generator implements all of these
+  fbp: first-party cookie _fbp (fb.1.<ts>.<random>, 90d) — created if missing
+  fbc: first-party cookie _fbc from ?fbclid= (fb.1.<ts>.<fbclid>, 90d)
+  eid: event id sent on every hit — deduplicates against CAPI (hybrid target)
+  advanced_matching: ud[em|ph|fn|ln|ct|st|zp] from tagless.setUser(), SHA-256
+    hashed in the runtime; plaintext never reaches the request
+
 event_map:
   page_view: PageView
   purchase: Purchase

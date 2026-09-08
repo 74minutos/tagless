@@ -1,0 +1,19 @@
+{
+  "config": { "pixel_id": "1234567890" },
+  "user": { "email": " Test@Example.com ", "phone": "+34 600 111 222" },
+  "event": { "name": "purchase", "data": { "value": 49.9, "currency": "EUR" } },
+  "expect": [
+    {
+      "url": "https://www.facebook.com/tr",
+      "method": "GET",
+      "params": {
+        "id": "1234567890",
+        "ev": "Purchase",
+        "ud[em]": "973dfe463ec85785f5f95af5ba3906eedb2d931c24e69824a89ea65dba4e813b",
+        "ud[ph]": "67f01a2b0e2c34277df586b5cc6e35a5f232494e64dc33b5f75f80bf568914f1",
+        "cd[value]": "49.9"
+      },
+      "params_present": ["fbp", "eid"]
+    }
+  ]
+}

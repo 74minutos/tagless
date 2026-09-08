@@ -46,6 +46,7 @@ for (const dir of readdirSync(SPECS, { withFileTypes: true })) {
 
       const { tagless, captured } = createSandbox(readFileSync(outfile, 'utf8'))
       tagless.setConsent({ [spec.consent]: true })
+      if (fixture.user) await tagless.setUser(fixture.user)
       tagless.track(fixture.event.name, fixture.event.data)
 
       const failures = (fixture.expect ?? []).map((e) => matchExpectation(captured, e)).filter(Boolean)
