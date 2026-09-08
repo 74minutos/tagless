@@ -54,6 +54,19 @@ Point your agent at the MCP server:
 
 Pre-alpha, but real: the hosted CDN is live, the first production site runs on it (a Next.js site migrated off walkerOS — its whole tracking layer is 1.9KB gzipped), and every capability above is covered by the fixture/lifecycle CI (`npm test`). See [SPEC.md](SPEC.md) for the full design: MCP surface, config format, vendor spec contract, non-goals, roadmap.
 
+## Maintainership — read this before adopting
+
+tagless is open source **by deliberate choice, not by default**. I built it to prove a shape: a tag manager operated by agents can be tiny, honest, and contract-driven. I am not going to be its sustained maintainer — and I'd rather say that in the README than let you discover it in a stale issue tracker.
+
+If this idea earns a community that improves it, nothing would make me happier. The project is deliberately structured so you don't need me:
+
+- **The design is the doc** — [SPEC.md](SPEC.md) states the thesis, the boundaries, and what core must never become.
+- **The CI is the contract** — `npm test` covers every capability; a change that keeps it green is a change I'd merge.
+- **The registry is the growth path** — new vendors are YAML specs + fixtures ([specs/](specs/)), no core changes needed.
+- **Apache-2.0 means you never need permission** — extend it, fork it, or take it over entirely.
+
+PRs are welcome and I'll review them when I can, honestly and without SLA. Vendor specs are the easiest contribution and the most valuable one. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## License
 
 [Apache-2.0](LICENSE)
