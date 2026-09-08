@@ -72,7 +72,7 @@ server.registerTool(
   },
   async ({ config, out }) => {
     const { abs, cfg } = readConfig(config)
-    const entry = generateEntry(cfg)
+    const entry = generateEntry(cfg, path.dirname(abs))
     const outfile = await compileToTemp(abs)
     const next = sizes(outfile)
     const currentPath = path.join(out ?? path.join(path.dirname(abs), 'dist'), 't.js')
@@ -108,7 +108,7 @@ server.registerTool(
   },
   async ({ config, plan_id, out }) => {
     const { abs, cfg } = readConfig(config)
-    const current = planId(generateEntry(cfg))
+    const current = planId(generateEntry(cfg, path.dirname(abs)))
     if (current !== plan_id) {
       return fail(
         `plan ${plan_id} is stale: the config now plans as ${current}. Re-run plan, review the diff, and apply with the new plan_id.`

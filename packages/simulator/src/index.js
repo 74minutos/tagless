@@ -15,6 +15,7 @@ export function createSandbox(code, page = {}) {
     console,
     URL,
     URLSearchParams,
+    crypto: globalThis.crypto,
     location: {
       href: page.url ?? 'https://example.test/',
       pathname: page.path ?? '/',
@@ -46,9 +47,11 @@ export function createSandbox(code, page = {}) {
 
 /** Split a captured request into base url + parsed query params. */
 export function parseRequest(req) {
-  const u = new URL(req.url)
+  // relative URLs (first-party collectors) parse against a sentinel origin
+  const relative = !/^[a-z]+:\/\//i.test(req.url)
+  const u = new URL(req.url, 'https://site.local')
   return {
-    url: u.origin + u.pathname,
+    url: relative ? u.pathname : u.origin + u.pathname,
     method: req.method,
     via: req.via,
     params: Object.fromEntries(u.searchParams),
