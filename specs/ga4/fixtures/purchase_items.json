@@ -1,0 +1,27 @@
+{
+  "config": { "measurement_id": "G-TEST123" },
+  "event": {
+    "name": "purchase",
+    "data": {
+      "value": 99.8,
+      "currency": "EUR",
+      "transaction_id": "T-1001",
+      "items": [
+        { "item_id": "sku1", "item_name": "Camiseta", "price": 49.9, "quantity": 2 }
+      ]
+    }
+  },
+  "expect": [
+    {
+      "url": "https://www.google-analytics.com/g/collect",
+      "method": "POST",
+      "params": {
+        "en": "purchase",
+        "cu": "EUR",
+        "pr1": "idsku1~nmCamiseta~pr49.9~qt2",
+        "epn.value": "99.8",
+        "ep.transaction_id": "T-1001"
+      }
+    }
+  ]
+}

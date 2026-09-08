@@ -6,6 +6,9 @@ import { build } from 'esbuild'
 import { ga4 } from './vendors/ga4.js'
 import { meta } from './vendors/meta.js'
 import { tiktok } from './vendors/tiktok.js'
+import { gads } from './vendors/gads.js'
+import { linkedin } from './vendors/linkedin.js'
+import { hotjar } from './vendors/hotjar.js'
 
 const RUNTIME_ENTRY = path.resolve(
   fileURLToPath(new URL('.', import.meta.url)),
@@ -15,7 +18,7 @@ const RUNTIME_ENTRY = path.resolve(
 // Built-in reference generators. The agent-written, spec-validated generators
 // will register here the same way; these two exist so the pipeline is real
 // end to end from day one.
-const generators = { ga4, meta, tiktok }
+const generators = { ga4, meta, tiktok, gads, linkedin, hotjar }
 
 export function generateEntry(cfg, baseDir = '.') {
   const site = cfg.site

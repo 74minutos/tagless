@@ -1,0 +1,28 @@
+# LinkedIn Insight — vendor spec contract
+id: linkedin
+version: 1
+name: LinkedIn Insight Tag
+docs: https://www.linkedin.com/help/lms/answer/a425606
+
+consent: marketing
+
+placements: [client, server]
+modes:
+  direct:
+    placement: client
+    transport: GET https://px.ads.linkedin.com/collect/
+    note: LinkedIn's own documented image-pixel format (fmt=gif). Every event
+      sends a collect hit (retargeting); events mapped in `conversions` carry
+      conversionId. ?li_fat_id= click id persisted first-party (30d) and replayed.
+  sdk:
+    placement: client
+    note: loads the Insight Tag script — needed for LinkedIn's automatic
+      website demographics beyond basic collect hits
+  capi:
+    placement: server
+    status: not_implemented
+    note: LinkedIn Conversions API — hybrid-target upgrade path
+
+config:
+  partner_id: { type: string, required: true }
+  conversions: { type: map, note: "{event_name: conversion_id} — optional; unmapped events still send retargeting hits" }

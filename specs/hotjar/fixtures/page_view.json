@@ -1,0 +1,11 @@
+{
+  "config": { "site_id": 12345 },
+  "event": { "name": "page_view", "data": {} },
+  "expect": [
+    {
+      "url": "https://static.hotjar.com/c/hotjar-12345.js",
+      "method": "GET",
+      "params": { "sv": "6" }
+    }
+  ]
+}

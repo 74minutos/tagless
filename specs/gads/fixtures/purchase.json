@@ -1,0 +1,16 @@
+{
+  "config": { "conversion_id": "AW-999888777", "labels": { "purchase": "TeStLaBeL" } },
+  "event": { "name": "purchase", "data": { "value": 49.9, "currency": "EUR", "transaction_id": "T-1001" } },
+  "expect": [
+    {
+      "url": "https://www.googleadservices.com/pagead/conversion/999888777/",
+      "method": "GET",
+      "params": {
+        "label": "TeStLaBeL",
+        "value": "49.9",
+        "currency_code": "EUR",
+        "oid": "T-1001"
+      }
+    }
+  ]
+}

@@ -13,7 +13,7 @@
         "_ss": "1",
         "_fv": "1",
         "epn.value": "49.9",
-        "ep.currency": "EUR"
+        "cu": "EUR"
       },
       "params_present": ["cid", "sid", "sct", "ul", "sr"]
     }

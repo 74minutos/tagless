@@ -58,6 +58,18 @@ t.use({
     }
     const ud = ctx.user()
     for (const k in ud) q.set('ud[' + k + ']', ud[k])
+
+    // ecommerce: items[] → contents/content_ids (fbevents wire format)
+    if (Array.isArray(e.data.items)) {
+      const items = e.data.items
+      q.set('cd[content_type]', 'product')
+      q.set('cd[content_ids]', JSON.stringify(items.map((i) => i.item_id ?? i.id).filter(Boolean)))
+      q.set('cd[contents]', JSON.stringify(items.map((i) => ({
+        id: i.item_id ?? i.id, quantity: i.quantity ?? 1, item_price: i.price,
+      }))))
+      q.set('cd[num_items]', String(items.reduce((n, i) => n + (i.quantity ?? 1), 0)))
+    }
+
     for (const k in e.data) {
       const v = e.data[k]
       if (v == null || typeof v === 'object') continue

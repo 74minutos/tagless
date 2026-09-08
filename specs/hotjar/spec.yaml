@@ -1,0 +1,20 @@
+# Hotjar — vendor spec contract
+id: hotjar
+version: 1
+name: Hotjar
+docs: https://help.hotjar.com/hc/en-us/articles/115009336727
+
+consent: analytics
+
+placements: [client]
+modes:
+  sdk:
+    placement: client
+    transport: script https://static.hotjar.com/c/hotjar-{site_id}.js?sv=6
+    note: sdk is the ONLY honest mode — Hotjar's product is its script
+      (recordings, heatmaps); there is no request to fire directly. tagless
+      adds consent-gated, load-once injection — the SDK doesn't exist in the
+      page until its consent category is granted.
+
+config:
+  site_id: { type: number, required: true }

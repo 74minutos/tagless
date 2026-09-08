@@ -31,6 +31,12 @@ t.use({
       const v = e.data[k]
       if (v != null && typeof v !== 'object') properties[k] = v
     }
+    if (Array.isArray(e.data.items)) {
+      properties.content_type = 'product'
+      properties.contents = e.data.items.map((i) => ({
+        content_id: i.item_id ?? i.id, content_name: i.item_name, quantity: i.quantity ?? 1, price: i.price,
+      }))
+    }
     ctx.send('https://analytics.tiktok.com/api/v2/pixel', {
       event: map[e.name] || e.name,
       event_id: e.ts + '-' + e.name,

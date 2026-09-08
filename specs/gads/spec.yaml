@@ -1,0 +1,34 @@
+# Google Ads — vendor spec contract
+id: gads
+version: 1
+name: Google Ads Conversion Tracking
+docs: https://support.google.com/google-ads/answer/6095821
+
+consent: marketing
+
+placements: [client, server]
+modes:
+  direct:
+    placement: client
+    transport: GET https://www.googleadservices.com/pagead/conversion/{conversion_id}/
+    note: the long-stable conversion image-pixel format. Includes gtag's
+      conversion-linker behavior — ?gclid= persisted to the first-party
+      _gcl_aw cookie (90d) and replayed as gclaw on conversions.
+  sdk:
+    placement: client
+    note: loads gtag.js — needed for Google Signals / on-page remarketing lists
+  enhanced_conversions:
+    placement: server
+    status: not_implemented
+    note: hashed user-data upload has no public client wire format — it belongs
+      to the server placement (Google Ads API / GTM-server), planned with the
+      hybrid target. Do NOT fake it client-side.
+
+config:
+  conversion_id: { type: string, required: true, pattern: "^(AW-)?[0-9]+$" }
+  labels: { type: map, required: true, note: "{event_name: conversion_label} — only mapped events fire conversions; every event still captures gclid" }
+
+fields:
+  value: { maps: value }
+  currency: { maps: currency_code }
+  transaction_id: { maps: oid, note: order dedup }

@@ -1,0 +1,28 @@
+{
+  "config": { "pixel_id": "1234567890" },
+  "event": {
+    "name": "purchase",
+    "data": {
+      "value": 99.8,
+      "currency": "EUR",
+      "items": [
+        { "item_id": "sku1", "item_name": "Camiseta", "price": 49.9, "quantity": 2 }
+      ]
+    }
+  },
+  "expect": [
+    {
+      "url": "https://www.facebook.com/tr",
+      "method": "GET",
+      "params": {
+        "ev": "Purchase",
+        "cd[content_type]": "product",
+        "cd[content_ids]": "[\"sku1\"]",
+        "cd[num_items]": "2",
+        "cd[value]": "99.8",
+        "cd[currency]": "EUR"
+      },
+      "params_present": ["cd[contents]", "fbp"]
+    }
+  ]
+}

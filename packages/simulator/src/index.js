@@ -37,7 +37,13 @@ export function createSandbox(code, page = {}) {
       search: loc.search,
     },
     document: (() => {
-      const doc = { title: page.title ?? 'Example', referrer: page.referrer ?? '' }
+      const doc = {
+        title: page.title ?? 'Example',
+        referrer: page.referrer ?? '',
+        // SDK-mode destinations inject <script> tags; capture them as requests
+        createElement: () => ({}),
+        head: { appendChild: (el) => push('script', el.src ?? '', null, 'GET') },
+      }
       let jar = []
       Object.defineProperty(doc, 'cookie', {
         get: () => jar.join('; '),

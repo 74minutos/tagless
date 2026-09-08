@@ -32,7 +32,7 @@ tracking.config.yaml ──▶ compiler ──▶ dist/t.js  (client target, zer
 | `packages/mcp` | The MCP server — the only management interface. All eight tools working over stdio: `init_site`, `import_gtm`, `plan`, `apply`, `simulate`, `publish_hosted`, `rollback`, `search_specs`. |
 | `packages/simulator` | vm sandbox: run a compiled bundle, capture every outgoing request. Powers `simulate` and the fixture CI. |
 | `packages/cdn-worker` | Hosted mode: the Cloudflare Worker behind `cdn.tagless.foo` — immutable snippet URL, versioned bundles, instant rollback. Also serves [tagless.foo](https://tagless.foo). |
-| `specs/` | Vendor spec contracts + fixtures (GA4, Meta, TikTok). |
+| `specs/` | Vendor spec contracts + fixtures: GA4, Meta, Google Ads, TikTok, LinkedIn, Hotjar. GTM-parity identity included — `_ga`-compatible client id + sessions, `_fbp`/`_fbc`, advanced matching via hashed `setUser()`, conversion linker, ecommerce `items[]`. |
 | `examples/demo` | A full `tracking.config.yaml` you can compile today — the same one live at `/t/demo.js`. |
 
 ## Try it

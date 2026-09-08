@@ -52,9 +52,23 @@ t.use({
     if (typeof screen !== 'undefined') q.set('sr', screen.width + 'x' + screen.height)
     if (first) q.set('_fv', '1')
     if (start) q.set('_ss', '1')
+
+    // ecommerce: items[] → prN params, currency → cu (gtag wire format)
+    if (Array.isArray(e.data.items)) {
+      const K = { item_id: 'id', item_name: 'nm', item_brand: 'br', item_category: 'ca',
+        item_variant: 'va', price: 'pr', quantity: 'qt', coupon: 'cp', discount: 'ds',
+        index: 'lp', item_list_id: 'li', affiliation: 'af' }
+      e.data.items.slice(0, 200).forEach((it, i) => {
+        let s = ''
+        for (const k in it) if (K[k] && it[k] != null) s += (s ? '~' : '') + K[k] + it[k]
+        if (s) q.set('pr' + (i + 1), s)
+      })
+    }
+    if (e.data.currency) q.set('cu', String(e.data.currency))
+
     for (const k in e.data) {
       const v = e.data[k]
-      if (v == null || typeof v === 'object') continue
+      if (v == null || typeof v === 'object' || k === 'currency') continue
       q.set((typeof v === 'number' ? 'epn.' : 'ep.') + k, String(v))
     }
     ctx.send('https://www.google-analytics.com/g/collect?' + q, undefined, true)

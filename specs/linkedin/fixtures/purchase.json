@@ -1,0 +1,16 @@
+{
+  "config": { "partner_id": "7654321", "conversions": { "purchase": 9999123 } },
+  "event": { "name": "purchase", "data": { "value": 49.9 } },
+  "expect": [
+    {
+      "url": "https://px.ads.linkedin.com/collect/",
+      "method": "GET",
+      "params": {
+        "pid": "7654321",
+        "fmt": "gif",
+        "conversionId": "9999123"
+      },
+      "params_present": ["url", "time"]
+    }
+  ]
+}
