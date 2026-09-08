@@ -55,8 +55,8 @@ export const LANDING = `<!doctype html>
 <body>
 <main>
   <div class="brand">tagless<b>.foo</b></div>
-  <h1>A tag manager built for&nbsp;agents.</h1>
-  <p class="claim">Your entire tag manager ships less JavaScript than one Meta pixel. GTM's snippet is <span class="num">~90KB+</span> before a single tag; fbevents.js alone is <span class="num">~110KB</span>. The tagless runtime is <strong><span class="num">&lt;3KB</span> gzipped</strong>, growing only with the integrations you actually use.</p>
+  <h1>1% of the JavaScript.<br>100% run by your&nbsp;agent.</h1>
+  <p class="claim">A tag manager built for agents. A real 7-destination container — GA4, Google Ads, Meta, TikTok, LinkedIn, a first-party collector — compiles to <strong><span class="num">4.2KB</span> gzipped</strong>. The vendor SDKs GTM loads for the same stack: <span class="num">908KB</span> of JavaScript, before gtm.js itself. fbevents.js alone is <span class="num">416KB</span>. <a href="https://github.com/74minutos/tagless/blob/main/docs/size.md">Measured, reproducible</a> — not marketed.</p>
 
   <div class="label">The whole install</div>
   <pre>&lt;script src="https://cdn.tagless.foo/t/&lt;your-site&gt;.js" defer&gt;&lt;/script&gt;</pre>
@@ -69,7 +69,7 @@ export const LANDING = `<!doctype html>
   </ul>
 
   <div class="label">See a compiled container</div>
-  <pre>curl https://cdn.tagless.foo/t/demo.js <span class="c"># runtime + GA4 + Meta, ~1.2KB gz</span></pre>
+  <pre>curl https://cdn.tagless.foo/t/demo.js <span class="c"># runtime + GA4 + Meta, ~2.5KB gz</span></pre>
 
   <div class="label">Open source, deliberately</div>
   <p class="claim" style="margin-top:14px;">tagless is open source by conscious choice, not by default: it was built to prove a shape, and its author won't be its sustained maintainer. It's structured so you don't need him — <strong>the spec is the doc, the CI is the contract, new vendors are YAML + fixtures</strong>, and Apache-2.0 means you never ask permission. If the community takes it further, that's the plan working.</p>

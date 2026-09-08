@@ -2,10 +2,10 @@
 
 **A tag manager built for agents.** — [tagless.foo](https://tagless.foo)
 
-Your entire tag manager ships less JavaScript than one Meta pixel. GTM's snippet is ~90KB+ before a single tag; `fbevents.js` alone is ~110KB. The tagless runtime targets **<3KB gzipped**, growing only with the integrations you actually use. Not a claim — a live artifact:
+**1% of the JavaScript. 100% run by your agent.** A real 7-destination container (GA4, Google Ads, Meta, TikTok, LinkedIn, first-party collector) compiles to 4.2KB gzipped; the vendor SDKs GTM loads for the same stack are 908KB — before gtm.js itself. Measured and reproducible: [docs/size.md](docs/size.md). Not a claim — a live artifact:
 
 ```bash
-curl https://cdn.tagless.foo/t/demo.js   # a full container: runtime + GA4 + Meta, 2,317 bytes raw
+curl https://cdn.tagless.foo/t/demo.js   # a full container: runtime + GA4 + Meta, ~2.5KB gz
 ```
 
 There is no UI. The manager is a **compiler** (declarative config in git → tree-shaken browser bundle) plus an **MCP server** (`plan` → approve → `apply`, Terraform-style) that any agent — Claude, ChatGPT, or your own — operates on your behalf: *"install GA4 and the Meta pixel on my site"*, and it happens — reviewed, tested, simulated before it ships.
