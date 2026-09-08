@@ -11,20 +11,35 @@ export function createSandbox(code, page = {}) {
   const push = (via, url, body, method) =>
     captured.push({ via, method, url: String(url), body: body == null ? null : String(body) })
 
+  const storage = () => {
+    const m = new Map()
+    return {
+      getItem: (k) => (m.has(k) ? m.get(k) : null),
+      setItem: (k, v) => m.set(k, String(v)),
+      removeItem: (k) => m.delete(k),
+    }
+  }
+
+  const href = page.url ?? 'https://example.test/'
+  const loc = new URL(href)
   const sandbox = {
     console,
     URL,
     URLSearchParams,
     crypto: globalThis.crypto,
     location: {
-      href: page.url ?? 'https://example.test/',
-      pathname: page.path ?? '/',
-      search: '',
+      href,
+      origin: loc.origin,
+      hostname: loc.hostname,
+      pathname: page.path ?? loc.pathname,
+      search: loc.search,
     },
     document: { title: page.title ?? 'Example', referrer: page.referrer ?? '' },
     history: { pushState() {} },
     addEventListener() {},
     navigator: {
+      language: 'en-US',
+      hardwareConcurrency: 8,
       sendBeacon(url, body) {
         push('beacon', url, body, 'POST')
         return true
@@ -34,7 +49,9 @@ export function createSandbox(code, page = {}) {
       push('fetch', url, init.body, init.method ?? 'GET')
       return Promise.resolve({})
     },
-    localStorage: {},
+    localStorage: storage(),
+    sessionStorage: storage(),
+    screen: { width: 1920, height: 1080, colorDepth: 24 },
   }
   sandbox.window = sandbox
   sandbox.self = sandbox

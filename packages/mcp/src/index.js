@@ -156,6 +156,78 @@ server.registerTool(
   }
 )
 
+const CDN = () => process.env.TAGLESS_CDN ?? 'https://cdn.tagless.foo'
+const publishAuth = () => {
+  const key = process.env.TAGLESS_PUBLISH_KEY
+  if (!key) throw new Error('TAGLESS_PUBLISH_KEY is not set in the MCP server environment')
+  return { authorization: `Bearer ${key}` }
+}
+
+server.registerTool(
+  'publish_hosted',
+  {
+    description:
+      'Hosted mode: compile the config, upload the bundle as an immutable version to the CDN, and repoint the site alias so the pasted snippet serves it within minutes. Same staleness rule as apply: requires the plan_id of the exact current config. Needs TAGLESS_PUBLISH_KEY in the environment.',
+    inputSchema: {
+      config: z.string().describe('path to tracking.config.yaml'),
+      plan_id: z.string().describe('plan_id returned by plan'),
+      cdn: z.string().optional().describe('CDN base URL (default: https://cdn.tagless.foo or $TAGLESS_CDN)'),
+    },
+  },
+  async ({ config, plan_id, cdn }) => {
+    const { abs, cfg } = readConfig(config)
+    const current = planId(generateEntry(cfg, path.dirname(abs)))
+    if (current !== plan_id) {
+      return fail(`plan ${plan_id} is stale: the config now plans as ${current}. Re-run plan and review the diff.`)
+    }
+    const auth = publishAuth()
+    const base = cdn ?? CDN()
+    const site = cfg.site.id
+    const bundle = readFileSync(await compileToTemp(abs), 'utf8')
+
+    const put = await fetch(`${base}/t/${site}@${plan_id}.js`, { method: 'PUT', headers: auth, body: bundle })
+    if (!put.ok) return fail(`upload failed: ${put.status} ${await put.text()}`)
+    const alias = await fetch(`${base}/t/${site}`, {
+      method: 'POST',
+      headers: { ...auth, 'content-type': 'application/json' },
+      body: JSON.stringify({ version: plan_id }),
+    })
+    if (!alias.ok) return fail(`alias repoint failed: ${alias.status} ${await alias.text()}`)
+
+    return json({
+      published: `${site}@${plan_id}`,
+      live_url: `${base}/t/${site}.js`,
+      versioned_url: `${base}/t/${site}@${plan_id}.js`,
+      snippet: `<script src="${base}/t/${site}.js" defer></script>`,
+      gzip_bytes: gzipSync(Buffer.from(bundle), { level: 9 }).length,
+      note: 'alias cache is max-age=300 + SWR — live within minutes; rollback repoints the alias to any previous version',
+    })
+  }
+)
+
+server.registerTool(
+  'rollback',
+  {
+    description:
+      'Hosted mode: repoint a site alias to any previously published version (a plan_id). Instant, no rebuild. Needs TAGLESS_PUBLISH_KEY.',
+    inputSchema: {
+      site: z.string().describe('site id'),
+      version: z.string().describe('plan_id of the version to make live'),
+      cdn: z.string().optional(),
+    },
+  },
+  async ({ site, version, cdn }) => {
+    const base = cdn ?? CDN()
+    const res = await fetch(`${base}/t/${site}`, {
+      method: 'POST',
+      headers: { ...publishAuth(), 'content-type': 'application/json' },
+      body: JSON.stringify({ version }),
+    })
+    if (!res.ok) return fail(`rollback failed: ${res.status} ${await res.text()}`)
+    return json({ site, live: version, live_url: `${base}/t/${site}.js` })
+  }
+)
+
 server.registerTool(
   'import_gtm',
   {
