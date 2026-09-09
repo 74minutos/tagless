@@ -94,7 +94,31 @@ tagless.track('purchase', { value: 49.9, currency: 'EUR', items: [...] })</pre>
   <span class="chain">rollback</span>
   <p class="quiet">Every publish is an immutable version; the alias just points at one. Rolling back is repointing — instant, no rebuild, and the bad version stays inspectable forever.</p>
 
-  <h2>4 · Gotchas</h2>
+  <h2>4 · Going hybrid — the gateway</h2>
+  <p>Same config, one more deploy, <strong>zero servers</strong>. Mark destinations for the server side and declare the edge target:</p>
+  <pre>destinations:
+  meta: { spec: meta@2, pixel_id: "…", placement: both }   <span class="c"># pixel + CAPI, deduped</span>
+  ga4:  { spec: ga4@1, measurement_id: G-…, placement: server }
+targets:
+  - client
+  - edge: { endpoint: https://t.yoursite.com/e }</pre>
+  <p><code>apply</code> now emits a second artifact: a self-contained gateway worker. It deploys to <strong>your own</strong> Cloudflare account (free tier: 100k events/day at €0/month) — the same shape as Meta's CAPI Gateway and Google's Tag Gateway, except one gateway covers every vendor:</p>
+  <pre>cd dist/edge
+npx wrangler deploy
+npx wrangler secret put META_ACCESS_TOKEN   <span class="c"># tokens are YOUR worker secrets,</span>
+npx wrangler secret put GA4_API_SECRET      <span class="c"># they never touch the browser</span>
+npx wrangler secret put TIKTOK_ACCESS_TOKEN</pre>
+  <p>What changes:</p>
+  <ul>
+    <li><strong>The browser sends one request per event</strong> — a first-party beacon. Identity stays client-side where it must live (<code>_fbp</code>, <code>_fbc</code>, the <code>_ga</code> client id and session), shipped in the envelope.</li>
+    <li><strong>Meta's recommended redundancy, free.</strong> <code>placement: both</code> fires pixel and CAPI with the same event id — Meta dedupes, you get resilience without double-counting.</li>
+    <li><strong>Match quality the client can't reach:</strong> real client IP and user agent from the edge headers, hashed user data over a server-to-server channel.</li>
+    <li><strong>TikTok stops being experimental</strong> — the gateway speaks its official Events API instead of the reverse-engineered pixel.</li>
+    <li><strong>Consent is enforced at both ends:</strong> the envelope carries the consent snapshot; the gateway gates each destination on it.</li>
+  </ul>
+  <p class="quiet">Contrast: GTM Server-Side needs ~€120+/month of managed instances for the same job. Not yet translated server-side: LinkedIn CAPI and Google Ads enhanced conversions — their specs say <code>not_implemented</code>, and that's exactly what it means.</p>
+
+  <h2>5 · Gotchas</h2>
   <ul>
     <li><strong>Silence before consent is correct.</strong> The #1 "bug report". Watch the network tab go from zero to fan-out when the banner is accepted.</li>
     <li><strong>New events need routing.</strong> Adding an event to <code>events:</code> doesn't send it anywhere — add it to each destination's <code>events:</code> list too. The plan shows the routing table; read it.</li>
@@ -102,12 +126,12 @@ tagless.track('purchase', { value: 49.9, currency: 'EUR', items: [...] })</pre>
     <li><strong>setUser is async.</strong> Hashing happens before storage — <code>await tagless.setUser({email})</code> before the track call that needs the match data.</li>
     <li><strong>find_element sees server-rendered HTML only.</strong> Client-rendered SPA elements are invisible to it; inspect the running page for those.</li>
     <li><strong>TikTok direct mode is experimental.</strong> Its browser wire format isn't officially documented. Verify in TikTok Events Manager; the documented path is the server-side Events API.</li>
-    <li><strong>Enhanced conversions & GA4 user-provided data are server-side.</strong> No public client wire format exists — tagless won't fake one. They arrive with the hybrid target.</li>
+    <li><strong>Enhanced conversions (Google Ads) & LinkedIn CAPI aren't wired yet.</strong> No public client wire format exists and their server APIs need deeper OAuth — the hybrid gateway covers Meta CAPI, GA4 MP and TikTok Events API today; the rest is marked <code>not_implemented</code> in the specs, honestly.</li>
     <li><strong>The alias caches for 5 minutes.</strong> A publish is live within minutes, not seconds. The versioned URL (<code>…@plan_id.js</code>) is immediate if you need to verify right now.</li>
     <li><strong>Site-local modules bill separately.</strong> The &lt;3KB budget covers tagless's world; your custom collector's bytes are yours.</li>
   </ul>
 
-  <h2>5 · Keeping the agent bill low</h2>
+  <h2>6 · Keeping the agent bill low</h2>
   <p class="quiet">The whole surface is built around a few dense calls. You've noticed the imperatives — you, the human, are not this section's reader. Agent: these are your operating rules.</p>
   <ul>
     <li><strong>The config is the only file worth reading.</strong> Everything else is generated. Never load <code>dist/t.js</code>, the bundle, or vendor SDKs into context — <code>simulate</code> already tells you what the compiled code does.</li>
