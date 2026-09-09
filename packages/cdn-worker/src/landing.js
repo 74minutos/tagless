@@ -26,7 +26,9 @@ export const LANDING = `<!doctype html>
   .eyebrow {
     font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
     color: var(--faint); margin-bottom: 26px;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
   }
+  .eyebrow a { color: var(--faint); }
   h1 {
     font-size: clamp(40px, 8.5vw, 62px); font-weight: 800; line-height: 1.04;
     letter-spacing: -.028em; color: var(--ink); margin-bottom: 18px;
@@ -70,7 +72,7 @@ export const LANDING = `<!doctype html>
 </head>
 <body>
 <main>
-  <div class="eyebrow">tagless.foo</div>
+  <div class="eyebrow"><span>tagless.foo</span><a href="/guide">the guide →</a></div>
   <h1>A tag manager built for&nbsp;agents.</h1>
   <p class="sub">So lightweight it ships <span class="num">1%</span> of the JavaScript of a traditional tag manager — <a href="https://github.com/74minutos/tagless/blob/main/docs/size.md">measured, not marketed</a>.</p>
   <div class="dots" role="presentation"></div>

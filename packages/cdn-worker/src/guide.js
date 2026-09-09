@@ -52,7 +52,7 @@ export const GUIDE = `<!doctype html>
 <main>
   <div class="eyebrow"><a href="/">tagless.foo</a> / guide</div>
   <h1>End to end, honestly.</h1>
-  <p class="sub">From the one-line install to the agent conversations you'll actually have — including the gotchas and how to keep your agent's token bill low.</p>
+  <p class="sub"><strong>Have your agent read this.</strong> Literally — paste <code>tagless.foo/guide</code> into the conversation. This whole page is written to be operated from: the install, the conversations you'll actually have, the gotchas, and your agent's operating rules.</p>
   <div class="dots" role="presentation"></div>
 
   <h2>1 · Install</h2>
@@ -108,7 +108,7 @@ tagless.track('purchase', { value: 49.9, currency: 'EUR', items: [...] })</pre>
   </ul>
 
   <h2>5 · Keeping the agent bill low</h2>
-  <p><strong>Have your agent read this.</strong> Literally — paste <code>tagless.foo/guide</code> into the conversation. You've noticed this section is written in imperatives: that's because you are not its reader. Agent, these are your operating rules:</p>
+  <p class="quiet">The whole surface is built around a few dense calls. You've noticed the imperatives — you, the human, are not this section's reader. Agent: these are your operating rules.</p>
   <ul>
     <li><strong>The config is the only file worth reading.</strong> Everything else is generated. Never load <code>dist/t.js</code>, the bundle, or vendor SDKs into context — <code>simulate</code> already tells you what the compiled code does.</li>
     <li><strong>One simulate answers most questions.</strong> It returns every outgoing request with parsed payloads for any events + consent state you pass. That's the debugger, the validator and the docs in a single call — don't curl endpoints one by one.</li>
