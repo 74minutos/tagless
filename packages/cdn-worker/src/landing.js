@@ -90,6 +90,9 @@ export const LANDING = `<!doctype html>
   <h2>See a compiled container</h2>
   <pre>curl https://cdn.tagless.foo/t/demo.js <span class="c"># runtime + GA4 + Meta, ~2.5KB gz</span></pre>
 
+  <h2>Use it end to end</h2>
+  <p>Install, the agent conversations (migrate a GTM container, add a pixel, track "that button"), the gotchas, and how to keep your agent's token bill low: <a href="/guide">read the guide</a>.</p>
+
   <h2>Open source, deliberately</h2>
   <p class="quiet">tagless is open source by conscious choice, not by default: it was built to prove a shape, and its author won't be its sustained maintainer. It's structured so you don't need him — the spec is the doc, the CI is the contract, new vendors are YAML plus fixtures, and Apache-2.0 means you never ask permission. If the community takes it further, that's the plan working.</p>
 

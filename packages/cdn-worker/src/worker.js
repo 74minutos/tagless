@@ -23,17 +23,22 @@ const js = (body, cache, version) =>
   })
 
 import { LANDING } from './landing.js'
+import { GUIDE } from './guide.js'
+
+const html = (body) =>
+  new Response(body, {
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'cache-control': 'public, max-age=300, stale-while-revalidate=86400',
+    },
+  })
 
 export default {
   async fetch(req, env) {
     const url = new URL(req.url)
-    if (url.pathname === '/' && (req.method === 'GET' || req.method === 'HEAD')) {
-      return new Response(LANDING, {
-        headers: {
-          'content-type': 'text/html; charset=utf-8',
-          'cache-control': 'public, max-age=300, stale-while-revalidate=86400',
-        },
-      })
+    if (req.method === 'GET' || req.method === 'HEAD') {
+      if (url.pathname === '/') return html(LANDING)
+      if (url.pathname === '/guide' || url.pathname === '/guide/') return html(GUIDE)
     }
     if (url.pathname === '/robots.txt') {
       return new Response('User-agent: *\nAllow: /\n', { headers: { 'content-type': 'text/plain' } })

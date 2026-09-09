@@ -31,6 +31,8 @@ const check = async (label, ok) => {
 
 const landing = await call('GET', '/')
 await check('landing served at root', landing.status === 200 && landing.headers.get('content-type').includes('text/html') && (await landing.text()).includes('built for'))
+const guide = await call('GET', '/guide')
+await check('guide served at /guide', guide.status === 200 && (await guide.text()).includes('End to end'))
 
 await check('GET unknown site → 404', call('GET', '/t/mysite.js').then((r) => r.status === 404))
 await check('PUT without key → 401', call('PUT', '/t/mysite@abc123.js', { body: 'x' }).then((r) => r.status === 401))
@@ -54,5 +56,5 @@ await call('POST', '/t/mysite', { body: JSON.stringify({ version: 'abc123' }), a
 await check('rollback: alias repointed to v1', call('GET', '/t/mysite.js').then(async (r) => (await r.text()).includes('v1')))
 await check('old version still served immutably', call('GET', '/t/mysite@def456.js').then((r) => r.status === 200))
 
-console.log(`\ncdn-worker: ${12 - failed}/12 passed`)
+console.log(`\ncdn-worker: ${13 - failed}/13 passed`)
 if (failed) process.exit(1)
