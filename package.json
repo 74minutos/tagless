@@ -10,7 +10,7 @@
   "scripts": {
     "demo": "node packages/compiler/src/cli.js examples/demo/tracking.config.yaml examples/demo/dist",
     "size": "npm run demo && node scripts/size.js examples/demo/dist/t.js",
-    "test": "node scripts/check-specs.js && node scripts/check-import.js && node scripts/check-module.js && node scripts/check-worker.js && node scripts/check-detect.js",
+    "test": "node scripts/check-specs.js && node scripts/check-import.js && node scripts/check-module.js && node scripts/check-worker.js && node scripts/check-detect.js && node scripts/check-variables.js",
     "mcp": "node packages/mcp/src/index.js",
     "mcp:smoke": "node scripts/mcp-smoke.js"
   },

@@ -8,6 +8,7 @@ import vm from 'node:vm'
  */
 export function createSandbox(code, page = {}) {
   const captured = []
+  const domListeners = {}
   const push = (via, url, body, method) =>
     captured.push({ via, method, url: String(url), body: body == null ? null : String(body) })
 
@@ -43,6 +44,12 @@ export function createSandbox(code, page = {}) {
         // SDK-mode destinations inject <script> tags; capture them as requests
         createElement: () => ({}),
         head: { appendChild: (el) => push('script', el.src ?? '', null, 'GET') },
+        // DOM sources: capture delegated listeners; page.dom maps selector → text
+        addEventListener: (type, fn) => {
+          ;(domListeners[type] ??= []).push(fn)
+        },
+        querySelector: (sel) =>
+          page.dom && sel in page.dom ? { textContent: page.dom[sel] } : null,
       }
       let jar = []
       Object.defineProperty(doc, 'cookie', {
@@ -80,7 +87,16 @@ export function createSandbox(code, page = {}) {
   vm.createContext(sandbox)
   vm.runInContext(code, sandbox, { filename: 't.js' })
 
-  return { tagless: sandbox.tagless, captured, sandbox }
+  /**
+   * Simulate a DOM event on an element. `el` needs the fields the config
+   * reads (textContent, href, …); `matches` is the selector it answers to.
+   */
+  const fireDom = (type, matches, el = {}) => {
+    const target = { ...el, closest: (sel) => (sel === matches ? target : null) }
+    for (const fn of domListeners[type] ?? []) fn({ target })
+  }
+
+  return { tagless: sandbox.tagless, captured, sandbox, fireDom }
 }
 
 /** Split a captured request into base url + parsed query params. */

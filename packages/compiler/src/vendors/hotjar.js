@@ -8,8 +8,7 @@
 export function hotjar(id, dest) {
   if (!dest.site_id) throw new Error(`destination "${id}": site_id is required`)
   const siteId = Number(dest.site_id)
-  return `
-t.use({
+  return `({
   id: ${JSON.stringify(id)},
   consent: ${JSON.stringify(dest.consent ?? 'analytics')},
   events: ${JSON.stringify(dest.events ?? ['page_view'])},

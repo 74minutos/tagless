@@ -56,6 +56,8 @@ export interface Tagless {
    */
   setUser: (u: Record<string, string | undefined>) => Promise<void>
   use: (d: Destination) => void
+  /** delegated DOM event source: fire `name` when `selector` matches ev.target.closest() */
+  on: (domEvent: string, selector: string, name: string, fields?: (el: Element) => Record<string, unknown>) => void
   /** bridge an existing dataLayer-style global array (items with an `event` key) */
   bridge: (globalName?: string) => void
 }
@@ -170,6 +172,23 @@ export function createTagless(opts: RuntimeOptions): Tagless {
     dests.push(d)
   }
 
+  const on: Tagless['on'] = (domEvent, selector, name, fields) => {
+    document.addEventListener(
+      domEvent,
+      (ev) => {
+        const target = ev.target as Element | null
+        const el = target && target.closest ? target.closest(selector) : null
+        if (!el) return
+        try {
+          track(name, fields ? fields(el) : {})
+        } catch {
+          /* a broken field accessor never breaks the page */
+        }
+      },
+      true
+    )
+  }
+
   const bridge: Tagless['bridge'] = (globalName) => {
     const w = window as unknown as Record<string, unknown[]>
     const name = globalName || 'dataLayer'
@@ -202,5 +221,5 @@ export function createTagless(opts: RuntimeOptions): Tagless {
     pv()
   }
 
-  return { track, setConsent, setUser, use, bridge }
+  return { track, setConsent, setUser, use, on, bridge }
 }

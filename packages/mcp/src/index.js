@@ -157,6 +157,48 @@ server.registerTool(
 )
 
 import { detectTags, draftConfig } from './detect.js'
+import { findElement } from './find-element.js'
+
+server.registerTool(
+  'find_element',
+  {
+    description:
+      'Turn "track clicks on that thing on the page" into a verified CSS selector: fetches the live page, finds clickable elements matching a plain-language description, and returns candidates with uniqueness-checked selectors plus a ready-to-paste config block for a source:dom event. Static-HTML scan — purely client-rendered elements are invisible to it.',
+    inputSchema: {
+      url: z.string().describe('page URL to inspect'),
+      description: z.string().describe('what the human said, e.g. "the start a conversation button"'),
+      event_name: z.string().optional().describe('event name for the config block (default: derived)'),
+    },
+  },
+  async ({ url, description, event_name }) => {
+    const res = await fetch(url, {
+      redirect: 'follow',
+      headers: { 'user-agent': 'Mozilla/5.0 (compatible; tagless-find-element)' },
+    })
+    if (!res.ok) return fail(`fetch failed: ${res.status} ${res.statusText}`)
+    const candidates = findElement(await res.text(), description)
+    if (!candidates.length) {
+      return json({
+        candidates: [],
+        note: 'no clickable element matched — if the page is client-rendered (SPA), the element may not exist in the static HTML; inspect the running page instead',
+      })
+    }
+    const best = candidates.find((c) => c.unique) ?? candidates.find((c) => c.selector) ?? candidates[0]
+    const name = event_name ?? 'cta_click'
+    const configBlock = best.selector
+      ? `events:\n  ${name}:\n    source: dom\n    on: click\n    selector: "${best.selector}"\n    fields: { text: "{{element.text}}" }`
+      : null
+    return json({
+      candidates,
+      config_block: configBlock,
+      note:
+        best.matches > 1
+          ? `the selector matches ${best.matches} elements — all of them will fire ${name} (for repeated CTAs that is usually what you want; the {{element.text}} field disambiguates)`
+          : undefined,
+      next_step: 'add the block to tracking.config.yaml, then plan → simulate (fireDom) → apply',
+    })
+  }
+)
 
 server.registerTool(
   'init_site',

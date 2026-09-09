@@ -13,8 +13,7 @@ export function gads(id, dest) {
   if (!Object.keys(labels).length) {
     throw new Error(`destination "${id}": labels is required ({event_name: conversion_label})`)
   }
-  return `
-t.use({
+  return `({
   id: ${JSON.stringify(id)},
   consent: ${JSON.stringify(dest.consent ?? 'marketing')},
   ${dest.events ? `events: ${JSON.stringify(dest.events)},` : ''}

@@ -18,8 +18,7 @@ const EVENT_MAP = {
 
 export function tiktok(id, dest) {
   if (!dest.pixel_id) throw new Error(`destination "${id}": pixel_id is required`)
-  return `
-t.use({
+  return `({
   id: ${JSON.stringify(id)},
   consent: ${JSON.stringify(dest.consent ?? 'marketing')},
   ${dest.events ? `events: ${JSON.stringify(dest.events)},` : ''}

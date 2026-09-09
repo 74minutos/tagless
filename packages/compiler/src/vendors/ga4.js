@@ -10,8 +10,7 @@
  */
 export function ga4(id, dest) {
   if (!dest.measurement_id) throw new Error(`destination "${id}": measurement_id is required`)
-  return `
-t.use({
+  return `({
   id: ${JSON.stringify(id)},
   ${dest.consent ? `consent: ${JSON.stringify(dest.consent)},` : ''}
   ${dest.events ? `events: ${JSON.stringify(dest.events)},` : ''}

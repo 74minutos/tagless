@@ -35,21 +35,66 @@ export function importGtm(exportJson) {
   const triggers = cv.trigger ?? []
   const variables = cv.variable ?? []
 
-  // resolve {{Constant Variable}} references; anything else stays literal and is reported
-  const constants = Object.fromEntries(
-    variables.filter((v) => v.type === 'c').map((v) => [v.name, param(v, 'value')])
-  )
+  // variable mapping: constants inline; dataLayer/cookie/URL/lookup tables
+  // become tagless variables; custom JS is reported, never guessed
+  const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+  const constants = {}
+  const mappedVars = {} // gtm name → { slug, def }
+  const varReports = []
+  for (const v of variables) {
+    if (v.type === 'c') { constants[v.name] = param(v, 'value'); continue }
+    if (v.type === 'v') mappedVars[v.name] = { slug: slug(v.name), def: { dataLayer: param(v, 'name') } }
+    else if (v.type === 'k') mappedVars[v.name] = { slug: slug(v.name), def: { cookie: param(v, 'name') } }
+    else if (v.type === 'u') {
+      const component = param(v, 'component')
+      if (component === 'QUERY') mappedVars[v.name] = { slug: slug(v.name), def: { query: param(v, 'queryKey') } }
+      else if (component === 'HOST') mappedVars[v.name] = { slug: slug(v.name), def: { value: '{{hostname}}' } }
+      else if (component === 'PATH') mappedVars[v.name] = { slug: slug(v.name), def: { value: '{{path}}' } }
+      else varReports.push({ variable: v.name, type: 'u', reason: `URL component "${component}" not mapped` })
+    } else if (v.type === 'smm' || v.type === 'remm') {
+      const input = param(v, 'map') // GTM stores the pairs under key "map"
+      const table = Object.fromEntries(
+        (Array.isArray(input) ? input : []).map((row) => [
+          row.map?.find((p) => p.key === 'key')?.value,
+          row.map?.find((p) => p.key === 'value')?.value,
+        ]).filter(([k]) => k != null)
+      )
+      const on = param(v, 'input')
+      mappedVars[v.name] = {
+        slug: slug(v.name),
+        def: { lookup: { on: on ?? '{{url}}', table, ...(v.type === 'remm' ? { regex: true } : {}),
+          ...(param(v, 'defaultValue') != null ? { default: param(v, 'defaultValue') } : {}) } },
+      }
+    } else {
+      varReports.push({ variable: v.name, type: v.type, reason: `variable type "${v.type}" not mapped — port manually (custom JS becomes a site-local module or a declared variable)` })
+    }
+  }
   const unresolved = new Set()
   const resolve = (val) =>
     typeof val === 'string'
       ? val.replace(/\{\{([^}]+)\}\}/g, (m, name) => {
           if (name in constants) return constants[name]
+          if (name in mappedVars) return `{{${mappedVars[name].slug}}}`
           unresolved.add(name)
           return m
         })
       : val
 
   const triggerById = Object.fromEntries(triggers.map((t) => [t.triggerId, t]))
+
+  // click triggers → declarative dom events, when a selector is derivable
+  // from the filters (Click ID equals X → #X, Click Classes contains Y → .Y)
+  const domEvents = {} // triggerId → { name, selector }
+  for (const t of triggers) {
+    if (t.type !== 'CLICK' && t.type !== 'LINK_CLICK') continue
+    for (const f of t.filter ?? []) {
+      const arg0 = f.parameter?.find((p) => p.key === 'arg0')?.value ?? ''
+      const arg1 = f.parameter?.find((p) => p.key === 'arg1')?.value ?? ''
+      if (!arg1) continue
+      if (/Click ID/i.test(arg0) && f.type === 'EQUALS') domEvents[t.triggerId] = { name: slug(t.name), selector: `#${arg1}` }
+      else if (/Click Classes/i.test(arg0)) domEvents[t.triggerId] = { name: slug(t.name), selector: `.${arg1.trim().split(/\s+/).join('.')}` }
+    }
+  }
 
   /** trigger ids → tagless event names ('' = unmappable trigger) */
   const eventsFor = (tag) =>
@@ -63,6 +108,7 @@ export function importGtm(exportJson) {
           t.customEventFilter?.[0]?.parameter?.find((p) => p.key === 'arg1')?.value ?? ''
         )
       }
+      if (domEvents[id]) return domEvents[id].name
       return ''
     })
 
@@ -78,9 +124,12 @@ export function importGtm(exportJson) {
   const mapped = []
   const unmapped = []
 
+  const domByName = Object.fromEntries(Object.values(domEvents).map((d) => [d.name, d.selector]))
   const addEvent = (name) => {
     if (!name) return
     if (name === 'page_view') config.events.page_view ??= { auto: true }
+    else if (domByName[name])
+      config.events[name] ??= { source: 'dom', on: 'click', selector: domByName[name], fields: { text: '{{element.text}}' } }
     else config.events[name] ??= { source: 'dataLayer' }
   }
   const addDestEvents = (dest, names) => {
@@ -143,6 +192,12 @@ export function importGtm(exportJson) {
     unmapped.push({ tag: tag.name, type: tag.type, reason: `unsupported tag type "${tag.type}" — no vendor spec yet` })
   }
 
+  if (Object.keys(mappedVars).length) {
+    config.variables = Object.fromEntries(
+      Object.values(mappedVars).map(({ slug: s, def }) => [s, def])
+    )
+  }
+
   return {
     config,
     report: {
@@ -150,6 +205,9 @@ export function importGtm(exportJson) {
       tags_total: tags.length,
       mapped,
       unmapped,
+      variables_mapped: Object.entries(mappedVars).map(([gtm, { slug: s }]) => `${gtm} → ${s}`),
+      variables_unmapped: varReports,
+      click_triggers_mapped: Object.values(domEvents).map((d) => `${d.name} ← ${d.selector}`),
       unresolved_variables: [...unresolved],
       notes: [
         'consent.source set to "custom" — wire your CMP to tagless.setConsent()',

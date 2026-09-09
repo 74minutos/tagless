@@ -9,8 +9,7 @@
 export function linkedin(id, dest) {
   if (!dest.partner_id) throw new Error(`destination "${id}": partner_id is required`)
   const conversions = dest.conversions ?? {}
-  return `
-t.use({
+  return `({
   id: ${JSON.stringify(id)},
   consent: ${JSON.stringify(dest.consent ?? 'marketing')},
   ${dest.events ? `events: ${JSON.stringify(dest.events)},` : ''}
