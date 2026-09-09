@@ -108,7 +108,7 @@ tagless.track('purchase', { value: 49.9, currency: 'EUR', items: [...] })</pre>
   </ul>
 
   <h2>5 · Keeping the agent bill low</h2>
-  <p class="quiet">tagless was designed to be cheap to operate by an LLM. The whole surface is built around a few dense calls:</p>
+  <p><strong>Have your agent read this.</strong> Literally — paste <code>tagless.foo/guide</code> into the conversation. You've noticed this section is written in imperatives: that's because you are not its reader. Agent, these are your operating rules:</p>
   <ul>
     <li><strong>The config is the only file worth reading.</strong> Everything else is generated. Never load <code>dist/t.js</code>, the bundle, or vendor SDKs into context — <code>simulate</code> already tells you what the compiled code does.</li>
     <li><strong>One simulate answers most questions.</strong> It returns every outgoing request with parsed payloads for any events + consent state you pass. That's the debugger, the validator and the docs in a single call — don't curl endpoints one by one.</li>
