@@ -3,12 +3,28 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parse } from 'yaml'
 import { build } from 'esbuild'
+import { writeFileSync, mkdirSync } from 'node:fs'
 import { ga4 } from './vendors/ga4.js'
 import { meta } from './vendors/meta.js'
 import { tiktok } from './vendors/tiktok.js'
 import { gads } from './vendors/gads.js'
 import { linkedin } from './vendors/linkedin.js'
 import { hotjar } from './vendors/hotjar.js'
+import { relay } from './vendors/relay.js'
+
+const EDGE_ENTRY = path.resolve(
+  fileURLToPath(new URL('.', import.meta.url)),
+  '../../edge/src/index.js'
+)
+
+/** targets: - edge  |  - edge: { endpoint: "…" } */
+export function getEdgeTarget(cfg) {
+  for (const t of cfg.targets ?? []) {
+    if (t === 'edge') return { endpoint: '/e' }
+    if (t && typeof t === 'object' && 'edge' in t) return { endpoint: '/e', ...(t.edge ?? {}) }
+  }
+  return null
+}
 
 const RUNTIME_ENTRY = path.resolve(
   fileURLToPath(new URL('.', import.meta.url)),
@@ -123,8 +139,18 @@ export function generateEntry(cfg, baseDir = '.') {
     return `t.use(EN(${destExpr}, () => ({ ${fields} })))`
   }
 
+  // hybrid target: placement server|both routes destinations through the relay
+  const edgeTarget = getEdgeTarget(cfg)
+  const serverDests = []
+
   let moduleCount = 0
   for (const [id, dest] of Object.entries(cfg.destinations ?? {})) {
+    const placement = dest.placement ?? 'client'
+    if (placement !== 'client') {
+      if (!edgeTarget) throw new Error(`destination "${id}": placement "${placement}" needs an edge target (targets: - edge)`)
+      serverDests.push([id, dest])
+      if (placement === 'server') continue // no client-side code at all
+    }
     // site-local destination: agent-written code living in the site's repo,
     // default-exporting a factory (opts) => Destination. Compiled in, tree-shaken
     // like everything else.
@@ -139,6 +165,14 @@ export function generateEntry(cfg, baseDir = '.') {
     const gen = generators[vendor]
     if (!gen) throw new Error(`destination "${id}": no generator for vendor "${vendor}" (or add a site-local "module")`)
     parts.push(wrap(gen(id, dest), dest))
+  }
+
+  if (serverDests.length) {
+    // one first-party stream carries everything the gateway needs;
+    // events = union of the server destinations' filters (undefined = all)
+    const lists = serverDests.map(([, d]) => d.events)
+    const union = lists.some((l) => !l) ? undefined : [...new Set(lists.flat())]
+    parts.push(`t.use(${relay(edgeTarget.endpoint, union)})`)
   }
 
   // DOM event sources: declarative click/submit tracking on selectors
@@ -182,5 +216,48 @@ export async function compile(configPath, outDir) {
     outfile,
   })
 
-  return { outfile, entry }
+  const edge = getEdgeTarget(cfg) ? await compileEdge(configPath, path.join(outDir, 'edge')) : null
+  return { outfile, entry, edge: edge?.outfile ?? null }
+}
+
+/**
+ * The user-owned gateway (SPEC §03): a self-contained Cloudflare Worker,
+ * ready for `wrangler deploy` in the USER's account. Vendor tokens are their
+ * worker secrets; nothing transits tagless infrastructure.
+ */
+export async function compileEdge(configPath, outDir) {
+  const cfg = parse(readFileSync(configPath, 'utf8'))
+  if (!getEdgeTarget(cfg)) throw new Error('config has no edge target')
+
+  const serverDests = Object.fromEntries(
+    Object.entries(cfg.destinations ?? {}).filter(([, d]) => d.placement === 'server' || d.placement === 'both')
+  )
+  if (!Object.keys(serverDests).length) throw new Error('edge target with no server/both destinations')
+
+  const entry = [
+    `import { createHandler } from ${JSON.stringify(EDGE_ENTRY)}`,
+    `export default createHandler(${JSON.stringify({ site: cfg.site.id, destinations: serverDests })})`,
+  ].join('\n')
+
+  mkdirSync(outDir, { recursive: true })
+  const outfile = path.join(outDir, 'worker.js')
+  await build({
+    stdin: { contents: entry, loader: 'js', resolveDir: outDir, sourcefile: 'edge-entry.js' },
+    bundle: true,
+    minify: true,
+    format: 'esm',
+    target: 'es2022',
+    outfile,
+  })
+
+  const secrets = [...new Set(Object.values(serverDests).map((d) => {
+    const vendor = String(d.spec ?? '').split('@')[0]
+    return { meta: 'META_ACCESS_TOKEN', ga4: 'GA4_API_SECRET', tiktok: 'TIKTOK_ACCESS_TOKEN' }[vendor]
+  }).filter(Boolean))]
+
+  writeFileSync(
+    path.join(outDir, 'wrangler.toml'),
+    `name = "tagless-edge-${cfg.site.id}"\nmain = "worker.js"\ncompatibility_date = "2026-09-01"\n\n# deploy (in this folder, YOUR Cloudflare account):\n#   npx wrangler deploy\n# secrets:\n${secrets.map((s) => `#   npx wrangler secret put ${s}`).join('\n')}\n# then point targets.edge.endpoint at the deployed URL and re-apply the client.\n`
+  )
+  return { outfile, secrets }
 }

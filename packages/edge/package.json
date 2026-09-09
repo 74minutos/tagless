@@ -1,0 +1,8 @@
+{
+  "name": "@tagless-dev/edge",
+  "version": "0.0.1",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "The user-owned gateway: receives the relay envelope first-party and fans out to vendor server APIs (Meta CAPI, GA4 Measurement Protocol, TikTok Events API). Deploys to the user's own Cloudflare account.",
+  "main": "src/index.js"
+}

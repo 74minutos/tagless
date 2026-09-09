@@ -24,6 +24,8 @@ export interface Ctx {
   setCookie: (name: string, value: string, days: number) => void
   /** normalized + SHA-256-hashed user data set via setUser (em, ph, fn, ln, ct, st, zp, external_id) */
   user: () => Record<string, string>
+  /** current consent snapshot ({} while unknown) — relays ship it so the gateway can gate per destination */
+  consent: () => ConsentState
 }
 
 export interface Destination {
@@ -106,6 +108,7 @@ export function createTagless(opts: RuntimeOptions): Tagless {
       }
     },
     user: () => user,
+    consent: () => ({ ...(consent ?? {}) }),
     send: (url, body, beacon) => {
       const s = body == null ? undefined : typeof body === 'string' ? body : JSON.stringify(body)
       if (beacon && navigator.sendBeacon) {

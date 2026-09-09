@@ -51,6 +51,7 @@ const destSummary = (cfg) =>
     id,
     spec: d.spec ?? id,
     consent: d.consent ?? null,
+    placement: d.placement ?? 'client',
     events: d.events ?? '(all)',
   }))
 
