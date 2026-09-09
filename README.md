@@ -67,6 +67,8 @@ If this idea earns a community that improves it, nothing would make me happier. 
 
 PRs are welcome and I'll review them when I can, honestly and without SLA. Vendor specs are the easiest contribution and the most valuable one. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
+There's no SLA, but there is a tip jar: if tagless saved your site half a megabyte, you can [buy the project a coffee](https://buy.stripe.com/6oUaEW8kf9mn0UY62SdjO00) — or a few.
+
 ## License
 
 [Apache-2.0](LICENSE)

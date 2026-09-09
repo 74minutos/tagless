@@ -121,6 +121,7 @@ tagless.track('purchase', { value: 49.9, currency: 'EUR', items: [...] })</pre>
   <footer>
     <a href="/">tagless.foo</a>
     <a href="https://github.com/74minutos/tagless">GitHub</a>
+    <a href="https://buy.stripe.com/6oUaEW8kf9mn0UY62SdjO00">buy the project a coffee</a>
     <span>Apache-2.0</span>
   </footer>
 </main>

@@ -101,6 +101,7 @@ export const LANDING = `<!doctype html>
   <footer>
     <span>Apache-2.0</span>
     <a href="https://github.com/74minutos/tagless">GitHub</a>
+    <a href="https://buy.stripe.com/6oUaEW8kf9mn0UY62SdjO00">buy the project a coffee</a>
     <span>pre-alpha</span>
   </footer>
 </main>
