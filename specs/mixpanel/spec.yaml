@@ -1,0 +1,24 @@
+# Mixpanel — vendor spec contract
+id: mixpanel
+version: 1
+name: Mixpanel
+docs: https://developer.mixpanel.com/reference/track-event
+
+consent: analytics
+
+placements: [server]
+modes:
+  ingestion_api:
+    placement: server
+    transport: POST https://api.mixpanel.com/track?verbose=1
+    note: the documented ingestion endpoint, JSON body. $insert_id = envelope
+      eid gives idempotency on retries.
+  sdk:
+    placement: client
+    status: not_implemented
+
+config:
+  token: { type: string, note: "project token (public by design); or set MIXPANEL_TOKEN as a worker secret" }
+
+identity:
+  distinct_id: envelope ids.distinct_id, falling back to the browser cid

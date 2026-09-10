@@ -1,0 +1,39 @@
+# Conversational events vocabulary — the GA4-recommended-events equivalent
+# for chat and agent products. Draft; extend via PR.
+id: conversational
+version: 1
+status: draft
+docs: ../../docs/envelope.md
+
+# The one hard rule of this vocabulary: MESSAGE CONTENT NEVER TRAVELS.
+# Send properties about the message — never the message. Users type PII
+# freely into chat; excluding content structurally is the contract.
+# (LLM observability — traces, prompts, evals — is out of scope: that's
+# Langfuse/Braintrust territory. This vocabulary is product analytics.)
+privacy:
+  message_content: forbidden
+  pii: use the envelope `user` field, pre-hashed
+
+events:
+  conversation_started:
+    properties: [conversation_id, channel, model, entry_point]
+  message_sent:
+    properties: [conversation_id, turn, role, model, tokens_in, tokens_out, latency_ms]
+    note: role = user | assistant; one event per turn, content excluded
+  tool_called:
+    properties: [conversation_id, tool, success, latency_ms]
+  feedback:
+    properties: [conversation_id, turn, rating, reason_code]
+    note: reason_code from your own enum — never free text
+  conversion:
+    properties: [conversation_id, type, value, currency]
+    note: the business outcome a conversation produced (signup, booking, sale)
+  handoff:
+    properties: [conversation_id, to]
+    note: escalation to a human or another system
+  conversation_ended:
+    properties: [conversation_id, turns, duration_ms, outcome]
+
+destinations:
+  note: routes like any event — GA4 MP, Meta CAPI (conversion), and the
+    product-analytics vendors (PostHog, Mixpanel) fit conversational data best

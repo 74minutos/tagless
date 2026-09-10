@@ -1,0 +1,28 @@
+# PostHog — vendor spec contract
+id: posthog
+version: 1
+name: PostHog
+docs: https://posthog.com/docs/api/capture
+
+consent: analytics
+
+placements: [server]
+modes:
+  capture_api:
+    placement: server
+    transport: POST {host}/capture/
+    note: the documented capture endpoint; host configurable (US/EU cloud or
+      self-hosted). The natural destination for conversational/product events
+      via the envelope API (docs/envelope.md).
+  sdk:
+    placement: client
+    status: not_implemented
+    note: posthog-js does much more than capture (replay, flags) — load it
+      yourself if you need those; tagless routes events
+
+config:
+  api_key: { type: string, note: "project API key (phc_…, public by design); or set POSTHOG_API_KEY as a worker secret" }
+  host: { type: string, default: "https://us.i.posthog.com" }
+
+identity:
+  distinct_id: envelope ids.distinct_id, falling back to the browser cid

@@ -8,8 +8,16 @@
 import { metaServer } from './vendors/meta.js'
 import { ga4Server } from './vendors/ga4.js'
 import { tiktokServer } from './vendors/tiktok.js'
+import { posthogServer } from './vendors/posthog.js'
+import { mixpanelServer } from './vendors/mixpanel.js'
 
-const TRANSLATIONS = { meta: metaServer, ga4: ga4Server, tiktok: tiktokServer }
+const TRANSLATIONS = {
+  meta: metaServer,
+  ga4: ga4Server,
+  tiktok: tiktokServer,
+  posthog: posthogServer,
+  mixpanel: mixpanelServer,
+}
 
 export function serverVendors() {
   return Object.keys(TRANSLATIONS)
