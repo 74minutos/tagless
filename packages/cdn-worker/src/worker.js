@@ -54,7 +54,7 @@ export default {
       // only. Repo-mode bundles never phone home — that's a non-goal, not a
       // missing feature (SPEC §06).
       try {
-        env.SERVES?.writeDataPoint({ blobs: [site, version ? 'versioned' : 'alias'], doubles: [1], indexes: [site] })
+        env.tagless_installs?.writeDataPoint({ blobs: [site, version ? 'versioned' : 'alias'], doubles: [1], indexes: [site] })
       } catch { /* telemetry never breaks serving */ }
       if (version) {
         const body = await env.BUNDLES.get(`bundle:${site}@${version}`)
