@@ -6,10 +6,11 @@
  */
 export const DOGFOOD = `
 <style>
-  #tlc { position: fixed; left: 0; right: 0; bottom: 0; background: #f3ecdf; color: #40382c;
+  #tlc { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: #f3ecdf; color: #40382c;
     font: 14px/1.5 ui-sans-serif, system-ui, sans-serif; padding: 12px 24px;
     display: flex; gap: 14px; align-items: center; justify-content: center; flex-wrap: wrap;
     border-top: 1px solid #d9c9ae; }
+  #tlc[hidden] { display: none; } /* explicit display beats the hidden attribute otherwise */
   #tlc button { font: 600 13px ui-sans-serif, system-ui, sans-serif; padding: 6px 14px;
     border-radius: 999px; border: 1px solid #40382c; cursor: pointer; background: #40382c; color: #f3ecdf; }
   #tlc button.no { background: transparent; color: #40382c; }
