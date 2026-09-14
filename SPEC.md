@@ -112,6 +112,7 @@ Contributing a spec is writing YAML from a vendor's public docs — a far lower 
 - **No analytics product.** tagless routes events; it never stores or charts them.
 - **No CDP ambitions.** No identity resolution, no audiences, no warehouse sync. Route and get out of the way.
 - **No consent management.** It consumes CMP state as a first-class input; it doesn't render banners.
+- **No phone-home.** Compiled bundles never report back to tagless — a self-hosted container is invisible to the project, by design. Install metrics exist only where they occur naturally server-side: hosted-CDN bundle serves, counted per site with no visitor data.
 
 Everything else — new vendors, new event sources, new targets — lives in the spec registry, not in core. Core stays: compiler + runtime + MCP + simulator.
 

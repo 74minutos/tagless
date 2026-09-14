@@ -24,9 +24,10 @@ const js = (body, cache, version) =>
 
 import { LANDING } from './landing.js'
 import { GUIDE } from './guide.js'
+import { DOGFOOD } from './dogfood.js'
 
 const html = (body) =>
-  new Response(body, {
+  new Response(body.replace('</body>', DOGFOOD + '\n</body>'), {
     headers: {
       'content-type': 'text/html; charset=utf-8',
       'cache-control': 'public, max-age=300, stale-while-revalidate=86400',
@@ -49,6 +50,12 @@ export default {
 
     if (req.method === 'GET' || req.method === 'HEAD') {
       if (!ext) return new Response('not found', { status: 404 })
+      // hosted-install telemetry: count bundle serves per site, server-side
+      // only. Repo-mode bundles never phone home — that's a non-goal, not a
+      // missing feature (SPEC §06).
+      try {
+        env.SERVES?.writeDataPoint({ blobs: [site, version ? 'versioned' : 'alias'], doubles: [1], indexes: [site] })
+      } catch { /* telemetry never breaks serving */ }
       if (version) {
         const body = await env.BUNDLES.get(`bundle:${site}@${version}`)
         if (body === null) return new Response('unknown version', { status: 404 })

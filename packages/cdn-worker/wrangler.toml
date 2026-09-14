@@ -12,3 +12,11 @@ routes = [
 [[kv_namespaces]]
 binding = "BUNDLES"
 id = "f89ac9e26033420a9178cd4dd07199d0"
+
+# hosted-install telemetry: bundle serves per site (server-side, no visitor
+# data). Query via the CF Analytics Engine SQL API.
+# ENABLE FIRST (one click): https://dash.cloudflare.com/→ Workers → Analytics Engine,
+# then uncomment and redeploy. The worker guards env.SERVES, so this is safe either way.
+# [[analytics_engine_datasets]]
+# binding = "SERVES"
+# dataset = "tagless_serves"

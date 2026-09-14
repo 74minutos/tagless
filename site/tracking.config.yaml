@@ -1,0 +1,33 @@
+# tagless measured by tagless — the dogfood container for tagless.foo.
+# Published hosted (cdn.tagless.foo/t/tagless.js), consent-gated like
+# everything it ships. Open your network tab and watch the queue release
+# when you hit Allow: the landing is its own demo.
+site:
+  id: tagless
+  consent:
+    source: custom          # the two-button bar in the page footer
+    default: denied
+
+events:
+  page_view: { auto: true }
+  guide_click:
+    source: dom
+    on: click
+    selector: 'a[href="/guide"]'
+  github_click:
+    source: dom
+    on: click
+    selector: 'a[href^="https://github.com/74minutos"]'
+  coffee_click:
+    source: dom
+    on: click
+    selector: 'a[href^="https://buy.stripe.com"]'
+
+destinations:
+  ga4:
+    spec: ga4@1
+    measurement_id: G-PEG8EVN3SB
+    consent: analytics
+
+targets:
+  - client
