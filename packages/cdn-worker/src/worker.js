@@ -50,21 +50,25 @@ export default {
 
     if (req.method === 'GET' || req.method === 'HEAD') {
       if (!ext) return new Response('not found', { status: 404 })
-      // hosted-install telemetry: count bundle serves per site, server-side
-      // only. Repo-mode bundles never phone home — that's a non-goal, not a
-      // missing feature (SPEC §06).
-      try {
-        env.tagless_installs?.writeDataPoint({ blobs: [site, version ? 'versioned' : 'alias'], doubles: [1], indexes: [site] })
-      } catch { /* telemetry never breaks serving */ }
+      // hosted-install telemetry: count only SUCCESSFUL bundle serves per
+      // site (a 404 from a scanner probing /t/whatever.js is not an install).
+      // Server-side only; repo-mode bundles never phone home (SPEC §06).
+      const count = (kind) => {
+        try {
+          env.tagless_installs?.writeDataPoint({ blobs: [site, kind], doubles: [1], indexes: [site] })
+        } catch { /* telemetry never breaks serving */ }
+      }
       if (version) {
         const body = await env.BUNDLES.get(`bundle:${site}@${version}`)
         if (body === null) return new Response('unknown version', { status: 404 })
+        count('versioned')
         return js(body, 'public, max-age=31536000, immutable', version)
       }
       const current = await env.BUNDLES.get(`alias:${site}`)
       if (!current) return new Response('unknown site', { status: 404 })
       const body = await env.BUNDLES.get(`bundle:${site}@${current}`)
       if (body === null) return new Response('alias points to a missing bundle', { status: 500 })
+      count('alias')
       // updates land within minutes, the URL never changes; SWR keeps it
       // serving through republish races and origin hiccups
       return js(body, 'public, max-age=300, stale-while-revalidate=86400', current)
